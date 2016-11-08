@@ -20,7 +20,6 @@ class Object():
     def getObjectColor(self):
         return self.color
         
-        
 class DynamicObjects(object):
     """
     keep track of dynamically drawing objects
@@ -99,6 +98,9 @@ class DynamicObjects(object):
         color_array[:,2] = self.color[2]
         int_color_array = color_array.astype(int) 
         self.gl_colors = list(np.reshape(int_color_array, np.size(int_color_array), order = 'C')) 
+        
+    def getPosition(self):
+        return self.center
           
     def getGLvertices(self):
         return self.gl_vertices
