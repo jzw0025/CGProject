@@ -9,7 +9,7 @@ from scipy import interpolate
 import numpy as np
 import scipy.ndimage as ndimage
 
-inputDVC = SaveLoad.DVCdata("location of data") # import the DVC database
+inputDVC = SaveLoad.DVCdata("/Users/junchaowei/Desktop/MultiStrainGage11182016/") # import the DVC database
 
 ################### save the displacement, and create interpolation ##############
 inter_x = interpolate.LinearNDInterpolator(inputDVC.getPoints1(), inputDVC.getDisplacementX()[0], fill_value=0.0, rescale=True) 
@@ -75,11 +75,39 @@ simage2 = np.swapaxes(image2,0,1)
         
 image3 = ndimage.map_coordinates(simage2, [finX, finY, finZ], order=1)
 
+bsimage1 = np.zeros_like(simage1) # binary image A
+bsimage1[simage1>900] = 1
+
+bsimage3 = np.zeros_like(simage2) # binary image T(B)
+bsimage3[image3>1100] = 1
+
+binary_residule = abs(bsimage1-bsimage2)
+residule = image3-simage1
+
+sum(residule==65535)
+
+import matplotlib.pyplot as plt
+
+swp_simage1 = np.swapaxes(bsimage1,0,2) # swap axis for cross section view
+swp_image3 = np.swapaxes(bsimage3,0,2)
+
+plt.figure(1)
+plt.imshow(swp_simage1[:,:,82],interpolation='nearest',cmap='Greys_r') # image A cross section
+plt.figure(2)
+plt.imshow(swp_image3[:,:,82],interpolation='nearest',cmap='Greys_r')  # image T(B) cross section
+plt.figure(3)
+plt.imshow(abs(swp_simage1[:,:,82]-swp_image3[:,:,82]),interpolation='nearest',cmap='Greys_r')
+
+
 # showing the images' comparison
-vl = Visulization.DataVisulization(simage1,1000) # initial reference image
+#vl = Visulization.DataVisulization(ndimage.gaussian_filter(simage1,3),1000) # initial reference image
+#vl.contour3d()
+
+vl = Visulization.DataVisulization(ndimage.gaussian_filter(residule,3),1000) # initial reference image
 vl.contour3d()
-vl = Visulization.DataVisulization(simage2,1000) # deformed image
-vl.contour3d()
-vl = Visulization.DataVisulization(image3,1000) # registrated image
+
+#vl = Visulization.DataVisulization(ndimage.gaussian_filter(simage2,3),1000) # deformed image
+#vl.contour3d()
+vl = Visulization.DataVisulization(ndimage.gaussian_filter(image3,3),1000) # registrated image
 vl.contour3d()
         
