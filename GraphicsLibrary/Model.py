@@ -77,8 +77,10 @@ class Model(object):
         
         print "found cropped input glVertices list: " + str(len(glVertices))
         print "found cropped input glIndices list: " + str(len(glIndices))
-        print "found cropped input glNormals list: " + str(len(glNormal))
-        print "found cropped input glColor list: " + str(len(glColor))
+        if glNormal:
+            print "found cropped input glNormals list: " + str(len(glNormal))
+        if glColor:
+            print "found cropped input glColor list: " + str(len(glColor))
          
         Triangles(glVertices, glIndices, glColor, glNormals=glNormal)
         
