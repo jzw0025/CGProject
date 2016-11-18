@@ -6,6 +6,7 @@ image transformation operations
 
 import numpy as np
 from skimage.filters import threshold_otsu, threshold_adaptive
+from skimage.exposure import rescale_intensity
 
 def toBinary(volume, threshold):
     """
@@ -45,3 +46,29 @@ def sliceThreshold(volume, block_size = 5):
         segImg[:,:,i] = binary_adaptive
     
     return segImg
+
+def DynamicRangeImage(Image, inRange, outRange=None):
+    """
+    input:
+        Image --- (N,d) numpy ndarray
+        inRange --- (min, max) 
+        outRange --- (min, max)
+    """
+    
+    sx,sy,sz = Image.shape
+    
+    pad = 10
+    
+    output = np.empty((sx+2*pad, sy+2*pad, sz+2*pad)) 
+    print output.shape
+    
+    volume = np.empty_like(Image)
+    
+    for i in range(volume.shape[2]):
+        
+        volume[:,:,i] = rescale_intensity(Image[:,:,i], in_range=inRange)
+
+    output[pad:-pad, pad:-pad, pad:-pad] = volume
+    
+    return output
+    
