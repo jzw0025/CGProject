@@ -835,7 +835,7 @@ def subPoint(point_arr, center, radius):
     index_x = np.logical_and(point_arr[:,0]>=x1, point_arr[:,0]<=x2)
     index_y = np.logical_and(point_arr[:,1]>=y1, point_arr[:,1]<=y2)
     index_z = np.logical_and(point_arr[:,2]>=z1, point_arr[:,2]<=z2)    
-    index = np.logical_and(index_x, index_y, index_z)
+    index = np.logical_and(np.logical_and(index_x, index_y),index_z)
         
     return point_arr[index]
 
