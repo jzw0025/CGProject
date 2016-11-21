@@ -699,9 +699,6 @@ def calculateSubset_PCL(seg_arr1, seg_arr2, point_xyz, subsize, subsearch):
         subset2 = subset_ref(coordinate, subsize_search, 2) 
         eachpad = (subsize_fixed//2) # each direction has a pad "(subsize_fixed//2)"
         psubset2 =  subset_ref(coordinate, subsize_search+2*eachpad, 2)  # (ubsize_search+2*eachpad) must be an odd number!
-        
-        
-        
         displacement[i], correlation[i] = DCC(subset1, subset2, psubset2)
         print i*1.0/zdim*100 #"correlation value is: " + str(correlation[i])
         
@@ -768,4 +765,77 @@ def extractTriangle(tetras):
         if unique_list.get(j) == 1:
             out.append(j)
 
-    return out # create a big set with tuple elements        
+    return out # create a big set with tuple elements   
+    
+def ICP_KLT(point1, point2, iterations):
+        
+    def SVD(target, source):
+        """
+        the input data:
+        target --- N-D array e.g. shape: (1000, 3)
+        source --- N-D array e.g. shape: (1000, 3) 
+        the return data:
+        
+        """
+        targetTree = spatial.KDTree(target) # create K-D tree for the input target 
+        ######### the following code goes iterately ##########
+        translation = np.zeros([1,3])
+        ##########   translation  ########
+        vector = target.mean(0) - source.mean(0)
+        source = source + vector
+        ##########  rotation  ############
+        sourcePair_list = []
+        targetPair_list = []       
+        for i in range(source.shape[0]):
+            # find the closest point in the tree-data
+            results = targetTree.query(source[i])
+            sourcePair_list.append(list(source[i]))
+            targetPair_list.append(list(target[results[1]]))           
+        matrix1 = np.matrix(sourcePair_list)
+        matrix2 = np.matrix(targetPair_list)
+        # building the corresponding matrix
+        resultMatrix = matrix1.T.dot(matrix2)
+        # perform the SVD algorithm
+        try:
+            U, s, Vh = linalg.svd(resultMatrix)
+        except ValueError:
+            return source, np.zeros((3,3)), np.zeros((1,3))
+            
+        Rotation = Vh.T.dot(U.T)
+        source2 = Rotation.dot(np.matrix(source).T).T
+        #print newsource == newsource2
+        source = np.array(source2) # updating the source points
+        translation = translation + vector
+        return source, Rotation, translation 
+        
+    change_points = point2
+    translation2 = [0.0,0.0,0.0]
+    for i in range(iterations): # this SVD registration is followed by image registration at each step.
+        old_change_points = change_points
+        change_points, R, V = SVD(point1, change_points)
+        print "the sum sqare for the point cloud is: " + str(np.sqrt(sum(sum((change_points-old_change_points)**2))))
+        rotation2 = R
+        #translation = self.mean1_vector.T[0] - np.dot(np.dot(self.eig_vec_cov1,self.eig_vec_cov2.T),self.mean2_vector.T[0])
+        #translation2 = ((point2.mean(0)).dot(rotation2)-point1.mean(0)).dot(linalg.inv(rotation2))   
+        translation2 = translation2 + V          
+    
+    return translation2     
+    
+def subPoint(point_arr, center, radius):  
+               
+    x1 = center[0] - radius
+    x2 = center[0] + radius 
+        
+    y1 = center[1] - radius
+    y2 = center[1] + radius   
+        
+    z1 = center[2] - radius
+    z2 = center[2] + radius
+        
+    index_x = np.logical_and(point_arr[:,0]>=x1, point_arr[:,0]<=x2)
+    index_y = np.logical_and(point_arr[:,1]>=y1, point_arr[:,1]<=y2)
+    index_z = np.logical_and(point_arr[:,2]>=z1, point_arr[:,2]<=z2)    
+    index = np.logical_and(index_x, index_y, index_z)
+        
+    return point_arr[index]
+
