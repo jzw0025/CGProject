@@ -53,6 +53,47 @@ def readOCTstack(PathTiff):
         ArrayTiff[:, :, lstFilesDCM.index(filenameDCM)] = imarray # save the processed slice array into image
 
     return ArrayTiff
+    
+def readPartialOCTstack(PathTiff, start, end): 
+    
+    if type(PathTiff) is not str:
+        raise TypeError("the input address must be a string!")
+        
+    if not os.path.isdir(PathTiff):
+        raise TypeError("the input string must be a valid directory!")
+
+    lstFilesDCM = []  # create an empty list
+    print "found tiff files:" + str(len(lstFilesDCM))
+    for dirName, subdirList, fileList in os.walk(PathTiff,topdown=False):
+        #print dirName, subdirList, fileList
+        for filename in fileList:
+            if ".tif" in filename.lower():  # check whether the file's DICOM
+                lstFilesDCM.append(os.path.join(dirName,filename))
+                # load the first file for the sample
+                print "read the file:" + str(filename)
+                if len(lstFilesDCM) == 1:
+                    #print os.path.join(dirName,filename)
+                    #im = Image.open(os.path.join(dirName,filename))
+                    single_im = plt.imread(os.path.join(dirName,filename))
+                    print "read"
+                    
+    imx, imy = single_im.shape 
+    print "the size of input image is:" + str(imx)+ "/" + str(imy)   
+          
+    ConstPixelDims = (imx, imy, len(lstFilesDCM))
+    ArrayTiff = np.zeros(ConstPixelDims, dtype=float) # int array
+    Slice = lstFilesDCM[start:end+1] # reduce the slice vertically
+    
+    i=0          
+    for filenameDCM in Slice:  
+        print "processing the slice #: " + str(i)
+        i += 1
+        #im_data = plt.imread(filenameDCM) 
+        im = Image.open(filenameDCM)
+        imarray = np.array(im)
+        ArrayTiff[:, :, lstFilesDCM.index(filenameDCM)] = imarray # save the processed slice array into image
+
+    return ArrayTiff
 
 def medOCT(array, size, local=None):
     """
@@ -241,13 +282,18 @@ def ActiveEllipse(array, points):
 
 if __name__ == "__main__":
     print "this is test file!"
-    out= readOCTstack("/Users/junchaowei/Desktop/Python_DVC2/UP_Research/WholeRegionRealData/For Junchao/M6_OD_125_C-scan_full")                    
+    out = readOCTstack("/Users/junchaowei/Desktop/Python_DVC2/UP_Research/WholeRegionRealData/For Junchao/M6_OD_125_C-scan_full")                    
+    out2 = readPartialOCTstack("/Users/junchaowei/Desktop/Python_DVC2/UP_Research/WholeRegionRealData/For Junchao/M6_OD_baseline_C-scan_full",350,400)                    
     medOCT(out,15, local="/Users/junchaowei/Desktop/test")
     data = np.array([linebuilder.xs[1:], linebuilder.ys[1:]]).T    
     points = FindEllipse(data)    
-    a = plt.imread("/Users/junchaowei/Desktop/Python_DVC2/UP_Research/WholeRegionRealData/For Junchao/M6_OD_125_C-scan_full/386.tiff")
+    a = plt.imread("/Users/junchaowei/Desktop/Python_DVC2/UP_Research/WholeRegionRealData/For Junchao/M6_OD_125_C-scan_full/400.tiff")
+    ra = rescale_intensity(a, in_range=(60,255))
+    
+    mra = ndimage.filters.median_filter(ra, 3)
+    
     LogicRegion(a,points) 
-    plt.imshow(a)
+    plt.imshow(ra,cmap='Greys_r')
     plt.plot(out[:,0],out[:,1])
 
     
