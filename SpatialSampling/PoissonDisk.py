@@ -29,7 +29,7 @@ class DiskSamples:
        3) in_hull checks the sample to see if it is within the convex hull, which created by Delaunay triangulation
        4) GenSamples creates poisson disk samples within specified ISO value.
     """
-    def __init__(self,segimag,meshsize,threshold):
+    def __init__(self,segimag, meshsize, threshold):
         self.seg_arr = segimag
         self.samples = []
         self.sizing = meshsize
@@ -193,6 +193,35 @@ class DiskSamples:
         sx,sy,sz = image.shape
         
         pass
+     
+    @staticmethod # static method without object   
+    def RandomSampling(image, threshold, number, meshsize=None):
+        """
+        random sample generation in the given domain, meshsize.
+        docs: https://docs.scipy.org/doc/numpy/reference/generated/numpy.random.uniform.html
+        image --- input 3d data array
+        meshsize --- input distance domain (optional)
+        threshold --- surface value envoloped domain
+        number --- the size/density of samples
+        """
+        
+        sx, sy, sz = image.shape
+        
+        samples_x = np.random.uniform(0, sx-1, number)
+        samples_y = np.random.uniform(0, sy-1, number)
+        samples_z = np.random.uniform(0, sz-1, number)
+        
+        keep_points = []
+        for i in range(number): # loop all number of points in the random samples
+            print i
+            x_index = round(samples_x[i])
+            y_index = round(samples_y[i])
+            z_index = round(samples_z[i])
+            if image[x_index, y_index, z_index] > threshold:
+                keep_points.append([samples_x[i], samples_y[i], samples_z[i]])
+                
+        return np.array(keep_points)
+            
                   
     def GenSamples(self,rck_in,lim):
         """
