@@ -5,6 +5,7 @@ this creates volume object
 
 import os
 import ImageProcessing
+import SpatialSampling
 import numpy as np
 
 class OCTimage(object):
@@ -69,18 +70,25 @@ class RefVolume(OCTimage):
         self._block_volume = None
         self._denoise_volume = None
         self._binary_volume = None
+        self._random_points = None
+        self._mesh_samples = None
 
     def denoise(self,size, inRange):
         """
-        median_filter on the block volume
+        median_filter on the block volume, if size = 0, the median filter is ignored
+        dynamics range removes the background salt and pepper noise
         size --- for median filter
         inRange --- for Dynamic Range 
         """
-        temp_volume = ImageProcessing.medOCT(self._block_volume, size)
-        self._denoise_volume = ImageProcessing.DynamicRangeImage(temp_volume, inRange)
+        if size == 0:
+            print "no median filter!"
+            self._denoise_volume = ImageProcessing.DynamicRangeImage(self._block_volume, inRange)
+        else: 
+            temp_volume = ImageProcessing.medOCT(self._block_volume, size)
+            self._denoise_volume = ImageProcessing.DynamicRangeImage(temp_volume, inRange)
     
-    def binary(self, threshold):
-        self._binary_volume = ImageProcessing.toBinary(self._denoise_volume, threshold)
+    def simpleBinary(self, block_size):
+        self._binary_volume = ImageProcessing.sliceThreshold(Refvolume._denoise_volume, block_size=block_size)
   
     def points(self, number = None):
         """
@@ -163,13 +171,39 @@ class RefVolume(OCTimage):
         
     def distImage(self):
         pass
+    
+    def randomSampling(self,level,number):
+        """
+        level --- surface level 
+        number --- maximum points in the domain
+        """
+        self._random_points = SpatialSampling.RandomSampling(self._binary_volume, level, number)
+ 
+    def meshSampling(self, Sample_Density, threshold1, morphRange=20):
+        """
+        this method generates the poission disk sample in the binary volume domain
+        morphRange --- the expanded region outside the threshold1 surface, for points generation
+        """
+        if threshold1 > 1 or threshold1 < 0:
+            raise TypeError("the threshold must be in the range [0,1] for binary volume!")
+            return None
         
-    def meshSampling(self):
-        pass
+        dist_img1_new = ImageProcessing.mesh_dist_new(self._binary_volume, threshold1, morphRange)
+        point_arr1_new = ImageProcessing.sampling_def(self._binary_volume, dist_img1_new, threshold1, Sample_Density)
+        print "reference key point:" + str(point_arr1_new.shape)  
+        mesh2 = SpatialSampling.MeshDelaunay(point_arr1_new.T) # use the original point_arr1 
+        mesh2.mesh()
+        mesh2.alpha_shape(Sample_Density)
+        mesh2.mesh_triangle() # find unique triangles
+            
+        for dummy_i in range(1):   
+            Mesh_optimizer = SpatialSampling.MeshOptimizer(point_arr1_new.T,mesh2.ntri)
+            Mesh_optimizer.edge_connector_smooth()
+            
+        print "there are: " + str(point_arr1_new.shape) + " nodes"  
         
-    def kltSampling(self):
-        pass
-        
+        self._mesh = mesh2
+ 
     def getVolume(self):
         return self._volume_data
          
@@ -187,7 +221,8 @@ class DefVolume(OCTimage):
     """
     def __init__(self, address,start=None,end=None):
         """
-        initialize the class
+        initialize the class, deformed volume do not have the mesh sampling
+        
         """
         OCTimage.__init__(self, address, start, end)
         self._convex_xy = None # the list stores the x dimension of convex, the z dimension is as the index of element in list
@@ -196,18 +231,24 @@ class DefVolume(OCTimage):
         self._block_volume = None
         self._denoise_volume = None
         self._binary_volume = None
+        self._random_points = None
         
     def denoise(self,size, inRange):
         """
-        median_filter on the block volume
+        median_filter on the block volume, if size = 0, the median filter is ignored
+        dynamics range removes the background salt and pepper noise
         size --- for median filter
         inRange --- for Dynamic Range 
         """
-        temp_volume = ImageProcessing.medOCT(self._block_volume, size)
-        self._denoise_volume = ImageProcessing.DynamicRangeImage(temp_volume, inRange)
+        if size == 0:
+            print "no median filter!"
+            self._denoise_volume = ImageProcessing.DynamicRangeImage(self._block_volume, inRange)
+        else: 
+            temp_volume = ImageProcessing.medOCT(self._block_volume, size)
+            self._denoise_volume = ImageProcessing.DynamicRangeImage(temp_volume, inRange)
         
-    def binary(self, threshold):
-        self._binary_volume = ImageProcessing.toBinary(self._denoise_volume, threshold)
+    def simpleBinary(self, block_size):
+        self._binary_volume = ImageProcessing.sliceThreshold(Refvolume._denoise_volume, block_size=block_size)
         
     def points(self, number = None):
         """
@@ -291,11 +332,12 @@ class DefVolume(OCTimage):
     def distImage(self):
         pass
         
-    def meshSampling(self):
-        pass
-        
-    def kltSampling(self):
-        pass
+    def randomSampling(self,level,number):
+        """
+        level --- surface level 
+        number --- maximum points in the domain
+        """
+        self._random_points = SpatialSampling.RandomSampling(self._binary_volume, level, number)
         
     def getOriginVolume(self):
         return self._volume_data  
@@ -323,13 +365,29 @@ if __name__ == "__main__":
    Refvolume.blockImage()
    Defvolume.blockImage()
    
-   Refvolume.denoise(10, (60,255) )
-   Defvolume.denoise(10, (60,255) )
+   Refvolume.denoise(0,(50,255))
+   Defvolume.denoise(0,(50,255))
    
-   Refvolume.binary(60)
+   Refvolume.simpleBinary(101)
+   Defvolume.simpleBinary(101)
    
-   plot = Visualization.DataVisulization(ndimage.gaussian_filter(Refvolume._denoise_volume,1), 70)
+   #plt.imshow(Refvolume._denoise_volume[:,:,60],cmap='Greys_r')
+   #plt.show()
+   #plt.imshow(active[:,:,50],cmap='Greys_r')
+   #plt.show()
+   plt.imshow(ndimage.gaussian_filter(Refvolume._binary_volume,2)[:,:,50],cmap='Greys_r')
+   plt.show()
+   
+   plot = Visualization.DataVisulization(ndimage.gaussian_filter(Refvolume._binary_volume,3), 0.3)
    plot.contour3d()
+   
+   plot = Visualization.DataVisulization(ndimage.gaussian_filter(Refvolume._block_volume,2), 80)
+   plot.contour3d()
+    
+   input_volume = ndimage.gaussian_filter(Refvolume._binary_volume,3)
+   
+   
+   Visualization.DataVisulization(Refvolume, 1).scatterplot(out.T)
 
    #points = np.empty([len(b)*b[0].shape[0],3]) # initlizing the point array, each slice points number is b[0].shape, the slice number is len(b)
           
