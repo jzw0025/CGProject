@@ -54,7 +54,8 @@ def boundarypadding(subset,npad):
 def calculateSubset(seg_arr1, seg_arr2, point_xyz, subsize, subsearch):
     """
     this method calculates corresponding subsets for given points
-    
+    subsize --- the size of whole window size, instead of radius
+    subsearch --- the radius whole window size, instead of radius
     """
     ########## help methods ###########   
     
@@ -455,63 +456,87 @@ def ConnectMesh(ntri, pointNumber):
         
     return connector # the number of point/node connected to the point
     
-
-def ICP(image2, point1, point2, iterations):
+def SVD(target, source):
+    """
+    the input data:
+    target --- N-D array e.g. shape: (1000, 3)
+    source --- N-D array e.g. shape: (1000, 3) 
+    the return data:
+            
+    """
+    targetTree = spatial.KDTree(target) # create K-D tree for the input target
+            
+    ######### the following code goes iterately ##########
+    translation = np.zeros([1,3])
     
-        def SVD(target, source):
-            """
-            the input data:
-            target --- N-D array e.g. shape: (1000, 3)
-            source --- N-D array e.g. shape: (1000, 3) 
-            the return data:
-            
-            """
-            targetTree = spatial.KDTree(target) # create K-D tree for the input target
-            
-            ######### the following code goes iterately ##########
-            translation = np.zeros([1,3])
-            
-            ##########   translation  ########
-            vector = target.mean(0) - source.mean(0)
-            source = source + vector
-            ##########  rotation  ############
-            sourcePair_list = []
-            targetPair_list = []
+    ##########   translation  ########
+    vector = target.mean(0) - source.mean(0)
+    source = source + vector
+    ##########  rotation  ############
+    sourcePair_list = []
+    targetPair_list = []
                 
-            for i in range(source.shape[0]):
-                # find the closest point in the tree-data
-                results = targetTree.query(source[i])
-                sourcePair_list.append(list(source[i]))
-                targetPair_list.append(list(target[results[1]]))
+    for i in range(source.shape[0]):
+        # find the closest point in the tree-data
+        results = targetTree.query(source[i])
+        sourcePair_list.append(list(source[i]))
+        targetPair_list.append(list(target[results[1]]))
                     
-            matrix1 = np.matrix(sourcePair_list)
-            matrix2 = np.matrix(targetPair_list)
-            # building the corresponding matrix
-            resultMatrix = matrix1.T.dot(matrix2)
-            # perform the SVD algorithm
-            U, s, Vh = linalg.svd(resultMatrix)
-            Rotation = Vh.T.dot(U.T)
-            source2 = Rotation.dot(np.matrix(source).T).T
-            #print newsource == newsource2
-            source = np.array(source2) # updating the source points
-            translation = translation + vector
+    matrix1 = np.matrix(sourcePair_list)
+    matrix2 = np.matrix(targetPair_list)
+    # building the corresponding matrix
+    resultMatrix = matrix1.T.dot(matrix2)
+    # perform the SVD algorithm
+    U, s, Vh = linalg.svd(resultMatrix)
+    Rotation = Vh.T.dot(U.T)
+    source2 = Rotation.dot(np.matrix(source).T).T
+    #print newsource == newsource2
+    source = np.array(source2) # updating the source points
+    translation = translation + vector
             
-            return source, Rotation, translation 
-        
-        change_points = point2
-        
-        for i in range(iterations): # this SVD registration is followed by image registration at each step.
-            old_change_points = change_points # save a copy of old points
-            change_points, R, V = SVD(point1, change_points)
-            print "the sum sqare for the point cloud is: " + str(np.sqrt(sum(sum((change_points-old_change_points)**2))))
-            rotation2 = R
-            #translation = self.mean1_vector.T[0] - np.dot(np.dot(self.eig_vec_cov1,self.eig_vec_cov2.T),self.mean2_vector.T[0])
-            translation2 =  ((point2.mean(0)).dot(rotation2)-point1.mean(0)).dot(linalg.inv(rotation2))
+    return source, Rotation, translation 
+    
+def fixed_SVD(target, source):
+    """
+    this module calculates the fixed SVD for the paired input points
+    
+    """
+    translation = np.zeros([1,3])
+    vector = target.mean(0) - source.mean(0) # first dimension mean
+    source = source + vector
+    ##########  rotation  ############
+    matrix1 = np.matrix(source)
+    matrix2 = np.matrix(target)
+    # building the corresponding matrix
+    resultMatrix = matrix1.T.dot(matrix2)
+    # perform the SVD algorithm
+    U, s, Vh = linalg.svd(resultMatrix)
+    Rotation = Vh.T.dot(U.T)
+    source2 = Rotation.dot(np.matrix(source).T).T
+    #print newsource == newsource2
+    source = np.array(source2) # updating the source points
+    translation = translation + vector # translation is zero initially, this does not need to add iteratively, but keep the original formula
             
-            newimage2 = ndimage.interpolation.affine_transform(image2,rotation2,order=3,offset=translation2,cval=0.0) # rigid affine registration 
-            
-        return newimage2, change_points, rotation2, translation2
-        
+    return source, Rotation, translation 
+    
+    
+def ICP(image2, point1, point2, iterations):
+    change_points = point2
+    rotation_matrix_list =  []  
+    translation_vector_list = [] 
+    for i in range(iterations): # this SVD registration is followed by image registration at each step.
+        old_change_points = change_points # save a copy of old points
+        change_points, R, V = SVD(point1, change_points) # the translation is not used
+        print "the sum sqare for the point cloud is: " + str(np.sqrt(sum(sum((change_points-old_change_points)**2))))
+        rotation2 = R
+        rotation_matrix_list.append(R)
+        #translation = self.mean1_vector.T[0] - np.dot(np.dot(self.eig_vec_cov1,self.eig_vec_cov2.T),self.mean2_vector.T[0])
+        translation2 =  ((point2.mean(0)).dot(rotation2)-point1.mean(0)).dot(linalg.inv(rotation2)) # recalculating the translation using calculated rotation
+        translation_vector_list.append(translation2)
+        newimage2 = ndimage.interpolation.affine_transform(image2,rotation2,order=3,offset=translation2,cval=0.0) # rigid affine registration 
+           
+    return newimage2, change_points, rotation_matrix_list, translation_vector_list            
+              
 class CornerDetector:
     """
     this class implements HarrisCorner3D for 3D images.
@@ -765,49 +790,48 @@ def extractTriangle(tetras):
         if unique_list.get(j) == 1:
             out.append(j)
 
-    return out # create a big set with tuple elements   
+    return out # create a big set with tuple elements 
     
-def ICP_KLT(point1, point2, iterations):
-        
-    def SVD(target, source):
-        """
-        the input data:
-        target --- N-D array e.g. shape: (1000, 3)
-        source --- N-D array e.g. shape: (1000, 3) 
-        the return data:
-        
-        """
-        targetTree = spatial.KDTree(target) # create K-D tree for the input target 
-        ######### the following code goes iterately ##########
-        translation = np.zeros([1,3])
-        ##########   translation  ########
-        vector = target.mean(0) - source.mean(0)
-        source = source + vector
-        ##########  rotation  ############
-        sourcePair_list = []
-        targetPair_list = []       
-        for i in range(source.shape[0]):
-            # find the closest point in the tree-data
-            results = targetTree.query(source[i])
-            sourcePair_list.append(list(source[i]))
-            targetPair_list.append(list(target[results[1]]))           
-        matrix1 = np.matrix(sourcePair_list)
-        matrix2 = np.matrix(targetPair_list)
-        # building the corresponding matrix
-        resultMatrix = matrix1.T.dot(matrix2)
-        # perform the SVD algorithm
-        try:
-            U, s, Vh = linalg.svd(resultMatrix)
-        except ValueError:
-            return source, np.zeros((3,3)), np.zeros((1,3))
-            
-        Rotation = Vh.T.dot(U.T)
-        source2 = Rotation.dot(np.matrix(source).T).T
-        #print newsource == newsource2
-        source = np.array(source2) # updating the source points
-        translation = translation + vector
-        return source, Rotation, translation 
-        
+#def SVD(target, source):
+#    """
+#    the input data:
+#    target --- N-D array e.g. shape: (1000, 3)
+#    source --- N-D array e.g. shape: (1000, 3) 
+#    the return data:
+#    """
+#    targetTree = spatial.KDTree(target) # create K-D tree for the input target 
+#    ######### the following code goes iterately ##########
+#    translation = np.zeros([1,3])
+#    ##########   translation  ########
+#    vector = target.mean(0) - source.mean(0)
+#    source = source + vector
+#    ##########  rotation  ############
+#    sourcePair_list = []
+#    targetPair_list = []       
+#    for i in range(source.shape[0]):
+#        # find the closest point in the tree-data
+#        results = targetTree.query(source[i])
+#        sourcePair_list.append(list(source[i]))
+#        targetPair_list.append(list(target[results[1]]))           
+#    matrix1 = np.matrix(sourcePair_list)
+#    matrix2 = np.matrix(targetPair_list)
+#    # building the corresponding matrix
+#    resultMatrix = matrix1.T.dot(matrix2)
+#    # perform the SVD algorithm
+#    
+#    try:
+#        U, s, Vh = linalg.svd(resultMatrix)
+#    except ValueError: 
+#        return source, np.eye(3), np.zeros((1,3))
+#        
+#    Rotation = Vh.T.dot(U.T)
+#    source2 = Rotation.dot(np.matrix(source).T).T
+#    #print newsource == newsource2
+#    source = np.array(source2) # updating the source points
+#    translation = translation + vector
+#    return source, Rotation, translation   
+    
+def ICP_KLT(point1, point2, iterations):        
     change_points = point2
     translation2 = [0.0,0.0,0.0]
     for i in range(iterations): # this SVD registration is followed by image registration at each step.
