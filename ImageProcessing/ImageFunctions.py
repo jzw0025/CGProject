@@ -9,6 +9,8 @@ from skimage.filters import threshold_otsu, threshold_adaptive
 from skimage.measure import EllipseModel
 from skimage.segmentation import active_contour
 import math
+import matplotlib.pyplot as plt
+
 ##############
 # 
 # must use the command in Mac OS to convert the tiff image stack into tiff images:
@@ -168,7 +170,7 @@ def DynamicRangeImage(Image, inRange, outRange=None):
     pad = 10
     
     output = np.empty((sx+2*pad, sy+2*pad, sz+2*pad)) 
-    print output.shape
+    print "the padded volume size is: " + str(output.shape)
     
     volume = np.empty_like(Image)
     
@@ -179,6 +181,23 @@ def DynamicRangeImage(Image, inRange, outRange=None):
     output[pad:-pad, pad:-pad, pad:-pad] = volume
     
     return output
+    
+def ConvertImageSlice(volume, address=None):
+    """
+    volume --- ndarray 
+    address --- folder address
+    
+    """
+    if not address:
+        print "no address is imported: please make a fold on desktop named: image"
+        address = '/Users/junchaowei/Desktop/image/'
+    
+    for i in range(volume.shape[2]):
+        print "converting slice:" + str(i)
+        plt.imshow(volume[:,:,i], interpolation='nearest', cmap='Greys_r')
+        plt.savefig(address+ str(i) +'.tif')
+        
+    print "finished converting image slices"
     
 class LineBuilder:
     """
@@ -218,7 +237,7 @@ def KeyPoints(array):
     this return the Liner object with selected points in the 'array' image
     """
     fig = plt.figure()
-    plt.imshow(array)  
+    plt.imshow(array,cmap='Greys_r')  
     ax = fig.add_subplot(111)
     ax.set_title('click to build line segments')
     line, = ax.plot([0], [0])  # empty line
@@ -275,10 +294,27 @@ def ActiveEllipse(array, points):
     read the docs for the active_contour with tuned parameters
     http://scikit-image.org/docs/dev/auto_examples/edges/plot_active_contours.html
     """
-    snake = active_contour(array, points, w_edge=-1, w_line=-1) 
+    snake = active_contour(array, points, w_edge=-1, w_line=1, gamma=0.001, beta=10) 
     #plt.imshow(a)
     #plt.plot(snake[:,0],snake[:,1])
     return snake
+    
+def ImageRescale255(array):
+    """
+    this function recalculates the range of image(0.0,1.0) into (0,255)
+    """
+    maxa = array.max()
+    mina = array.min()
+    volume = 255*(array-mina)/(maxa-mina)
+    return volume.astype(int)
+    
+def ImageRescale1(array):
+    """
+    this function recalculates the range of image (0,255) into (0.0,1.0)
+    """
+    maxa = array.max()
+    mina = array.min()
+    return 1.0*(array-mina)/(maxa-mina).astype(float)
 
 if __name__ == "__main__":
     print "this is test file!"
