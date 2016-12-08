@@ -10,6 +10,7 @@ from skimage.measure import EllipseModel
 from skimage.segmentation import active_contour
 import math
 import matplotlib.pyplot as plt
+from skimage import exposure
 
 ##############
 # 
@@ -179,8 +180,30 @@ def DynamicRangeImage(Image, inRange, outRange=None):
         volume[:,:,i] = rescale_intensity(Image[:,:,i], in_range=inRange)
 
     output[pad:-pad, pad:-pad, pad:-pad] = volume
-    
+    print "the input volume size is: " + str(Image.shape)
+    print "the padded volume size is: " + str(output.shape)
     return output
+    
+def AdaptiveHistEqual(Image, Contrast=0.005):
+    
+    volume = np.empty_like(Image)
+    
+    for i in range(Image.shape[2]):
+        
+        volume[:,:,i] = exposure.equalize_adapthist(Image[:,:,i],clip_limit=Contrast)
+        
+    return volume
+    
+def SpaceMedianFilter(Image, size):
+    
+    if size >7:
+        print "the size needed to be less than 7, it will take a long time to run!"
+    
+    volume = np.empty_like(Image)
+    
+    volume = ndimage.filters.median_filter(Image, size)
+        
+    return volume
     
 def ConvertImageSlice(volume, address=None):
     """
@@ -314,8 +337,38 @@ def ImageRescale1(array):
     """
     maxa = array.max()
     mina = array.min()
-    return 1.0*(array-mina)/(maxa-mina).astype(float)
-
+    volume = 1.0*(array-mina)/(maxa-mina)
+    return volume.astype(float)
+    
+def AspectRatioPoins(Points,scale):
+    """
+    rescale point (N,3) for 3D printing
+    
+    scale--- tuple (min, max)
+    
+    """
+    
+    min0 = Points[:,0].min()
+    max0 = Points[:,0].max()
+    
+    min1 = Points[:,0].min()
+    max1 = Points[:,0].max()
+    
+    min2 = Points[:,0].min()
+    max2 = Points[:,0].max()
+    
+    normalized = np.empty_like(Points)
+    normalized[:,0] = (Points[:,0]-min0)/(max0-min0)
+    normalized[:,1] = (Points[:,1]-min1)/(max1-min1)
+    normalized[:,2] = (Points[:,2]-min1)/(max1-min1)
+    
+    # resacale
+    normalized[:,0] = normalized[:,0]*(scale[1]-scale[0])+scale[0]
+    normalized[:,1] = normalized[:,1]*(scale[1]-scale[0])+scale[0]
+    normalized[:,2] = normalized[:,2]*(scale[1]-scale[0])+scale[0]
+    
+    return normalized
+    
 if __name__ == "__main__":
     print "this is test file!"
     out = readOCTstack("/Users/junchaowei/Desktop/Python_DVC2/UP_Research/WholeRegionRealData/For Junchao/M6_OD_125_C-scan_full")                    
