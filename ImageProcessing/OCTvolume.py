@@ -82,7 +82,7 @@ class RefVolume(OCTimage):
         self._denoise_volume = None
         self._binary_volume = None
 
-    def denoise2D(self,size, inRange):
+    def denoise2D(self,volume, size, inRange):
         """
         deprecated@@!
         median_filter on the block volume, if size = 0, the median filter is ignored
@@ -90,14 +90,16 @@ class RefVolume(OCTimage):
         size --- for median filter
         inRange --- for Dynamic Range 
         """
+        print "using 2D median filter!"
         if size == 0:
             print "no median filter!"
-            self._denoise_volume = ImageProcessing.DynamicRangeImage(self._volume_data, inRange)
+            self._denoise_volume = ImageProcessing.DynamicRangeImage(volume, inRange)
         else: 
-            temp_volume = ImageProcessing.medOCT(self._volume_data, size)
+            temp_volume = ImageProcessing.medOCT(volume, size)
+            #temp_volume = ndimage.gaussian_filter(temp_volume,1)
             self._denoise_volume = ImageProcessing.DynamicRangeImage(temp_volume, inRange)
     
-    def denoise3D(self,size, inRange):
+    def denoise3D(self, volume, size, inRange):
         """
         this uses 3D median filter
         median_filter on the block volume, if size = 0, the median filter is ignored
@@ -105,15 +107,17 @@ class RefVolume(OCTimage):
         size --- for median filter
         inRange --- for Dynamic Range 
         """
+        print "using 3D median filter!"
         if size ==0:
             print "no median filter!"
-            self._denoise_volume = ImageProcessing.DynamicRangeImage(self._volume_data, inRange)
+            self._denoise_volume = ImageProcessing.DynamicRangeImage(volume, inRange)
         else:
-            temp_volume = ImageProcessing.SpaceMedianFilter(self._volume_data, size)
+            temp_volume = ImageProcessing.SpaceMedianFilter(volume, size)
+            #temp_volume = ndimage.gaussian_filter(temp_volume,1)
             self._denoise_volume = ImageProcessing.DynamicRangeImage(temp_volume, inRange)
     
     def simpleBinary(self, block_size):
-        self._binary_volume = ImageProcessing.sliceThreshold(self._denoise_volume, block_size=block_size)
+        self._binary_volume = ImageProcessing.sliceThreshold(self._block_volume, block_size=block_size)
   
     def points(self, number = None):
         """
@@ -177,19 +181,19 @@ class RefVolume(OCTimage):
             
         self._periPoint = fb
         
-    def blockImage(self):
+    def blockImage(self,volume,points):
         """
         this use the perPoint to create convex hull and logical operation for each slice
         """
-        self._logicSlice = ImageProcessing.LogicRegion(self._volume_data[:,:,self._volume_data.shape[2]//2], self._convex_xy)
-        self._block_volume = np.empty_like(self._volume_data)
+        self._logicSlice = ImageProcessing.LogicRegion(self._denoise_volume[:,:,self._denoise_volume.shape[2]//2], self._convex_xy)
+        self._block_volume = np.empty_like(self._denoise_volume)
         if self._state == False:
             for i in range(self._volume_data.shape[2]):
-                self._block_volume[:,:,i] = self._volume_data[:,:,i] * self._logicSlice
+                self._block_volume[:,:,i] = self._denoise_volume[:,:,i] * self._logicSlice
                 
         elif self._state == True:
              for i in range(self._start, self._end+1): 
-                self._block_volume[:,:,i] = self._volume_data[:,:,i] * self._logicSlice
+                self._block_volume[:,:,i] = self._denoise_volume[:,:,i] * self._logicSlice
         
     def threshold(self, block_size):
         return ImageProcessing.sliceThreshold(self._volume_data, block_size)
@@ -231,7 +235,7 @@ class DefVolume(OCTimage):
         self._denoise_volume = None
         self._binary_volume = None
         
-    def denoise2D(self,size,inRange):
+    def denoise2D(self,volume, size,inRange):
         """
         deprecated@@!
         this uses 2D median filter
@@ -240,14 +244,16 @@ class DefVolume(OCTimage):
         size --- for median filter
         inRange --- for Dynamic Range 
         """
+        print "using 2D mediam filter!"
         if size == 0:
             print "no median filter!"
-            self._denoise_volume = ImageProcessing.DynamicRangeImage(self._volume_data, inRange)
+            self._denoise_volume = ImageProcessing.DynamicRangeImage(volume, inRange)
         else: 
-            temp_volume = ImageProcessing.medOCT(self._volume_data, size)
+            temp_volume = ImageProcessing.medOCT(volume, size)
+            #temp_volume = ndimage.gaussian_filter(temp_volume,3)
             self._denoise_volume = ImageProcessing.DynamicRangeImage(temp_volume, inRange)
             
-    def denoise3D(self,size, inRange):
+    def denoise3D(self,volume, size, inRange):
         """
         this uses 3D median filter
         median_filter on the block volume, if size = 0, the median filter is ignored
@@ -255,15 +261,17 @@ class DefVolume(OCTimage):
         size --- for median filter
         inRange --- for Dynamic Range 
         """
+        print "using 3D median filter!"
         if size ==0:
             print "no median filter!"
-            self._denoise_volume = ImageProcessing.DynamicRangeImage(self._volume_data, inRange)
+            self._denoise_volume = ImageProcessing.DynamicRangeImage(volume, inRange)
         else:
-            temp_volume = ImageProcessing.SpaceMedianFilter(self._volume_data, size)
+            temp_volume = ImageProcessing.SpaceMedianFilter(volume, size)
+            #temp_volume = ndimage.gaussian_filter(temp_volume,3)
             self._denoise_volume = ImageProcessing.DynamicRangeImage(temp_volume, inRange)
         
-    def simpleBinary(self, block_size):
-        self._binary_volume = ImageProcessing.sliceThreshold(self._denoise_volume, block_size=block_size)
+    def simpleBinary(self, volume, block_size):
+        self._binary_volume = ImageProcessing.sliceThreshold(volume, block_size=block_size)
         
     def points(self, number = None):
         """
@@ -331,15 +339,15 @@ class DefVolume(OCTimage):
         """
         this use the perPoint to create convex hull and logical operation for each slice
         """
-        self._logicSlice = ImageProcessing.LogicRegion(self._volume_data[:,:,self._volume_data.shape[2]//2], self._convex_xy)
-        self._block_volume = np.empty_like(self._volume_data)
+        self._logicSlice = ImageProcessing.LogicRegion(self._denoise_volume[:,:,self._denoise_volume.shape[2]//2], self._convex_xy)
+        self._block_volume = np.empty_like(self._denoise_volume)
         if self._state == False:
-            for i in range(self._volume_data.shape[2]):
-                self._block_volume[:,:,i] = self._volume_data[:,:,i] * self._logicSlice
+            for i in range(self._denoise_volume.shape[2]):
+                self._block_volume[:,:,i] = self._denoise_volume[:,:,i] * self._logicSlice
                 
         elif self._state == True:
              for i in range(self._start, self._end+1): 
-                self._block_volume[:,:,i] = self._volume_data[:,:,i] * self._logicSlice
+                self._block_volume[:,:,i] = self._denoise_volume[:,:,i] * self._logicSlice
 
     def threshold(self, block_size):
         return ImageProcessing.sliceThreshold(self._volume_data, block_size)
@@ -364,26 +372,30 @@ if __name__ == "__main__":
     import Visualization
     from scipy import ndimage
     
-    Refvolume2 = RefVolume("/Users/junchaowei/Desktop/Python_DVC2/UP_Research/WholeRegionRealData/JunchaoFirstRun/M6_OD/M6_OD_baseline_C-scan/")
+    #Refvolume2 = RefVolume("/Users/junchaowei/Desktop/Python_DVC2/UP_Research/WholeRegionRealData/JunchaoFirstRun/M6_OD/M6_OD_baseline_C-scan/")
     #Defvolume = DefVolume("/Users/junchaowei/Desktop/Python_DVC2/UP_Research/WholeRegionRealData/JunchaoFirstRun/M6_OD/M6_OD_125_C-scan/")
-    
-    stop
-    ### data preprocessing
-    Refvolume = RefVolume("/Users/junchaowei/Desktop/SpaceRegistration_000_125/volume000.mat")
-    Defvolume = DefVolume("/Users/junchaowei/Desktop/SpaceRegistration_000_125/volume125_regi.mat")
 
-    Refvolume.denoise3D(3,(50,255))
-    Defvolume.denoise3D(3,(50,255)) 
+    Refvolume = RefVolume("/Users/junchaowei/Desktop/SpaceRegistration_000_125/volume000.mat")
+    Defvolume = DefVolume("/Users/junchaowei/Desktop/SpaceRegistration_000_125/volume125_regi.mat") 
     
-    Refvolume.simpleBinary(101)
-    Defvolume.simpleBinary(101)
+   # ra = Refvolume.points()
+   # da = Defvolume.points()
+   #
+   # rb = Refvolume.segmentation(np.array([ra.xs[1:],ra.ys[1:]]).T, useSnake=True)
+   # db = Defvolume.segmentation(np.array([da.xs[1:],da.ys[1:]]).T, useSnake=True)
+
+    Refvolume.denoise2D(Refvolume.getOriginVolume(), 5, (50,255))
+    Defvolume.denoise2D(Defvolume.getOriginVolume(), 5, (50,255)) 
+
+    #Refvolume.simpleBinary(101)
+    #Defvolume.simpleBinary(101)
    
     de_volume1 = Refvolume.getDenoiseVolume()
     de_volume2 = Defvolume.getDenoiseVolume()
-    
-    plt.figure(4)
-    plt.imshow(Refvolume2._volume_data[:,:,-10],interpolation='nearest',cmap='Greys_r')
-    plt.show()
+
+    #plt.figure(4)
+    #plt.imshow(Refvolume2._volume_data[:,:,-10],interpolation='nearest',cmap='Greys_r')
+    #plt.show()
     
 #            
 #    points_volume1 = Refvolume.getBinaryVolume()
@@ -407,18 +419,46 @@ if __name__ == "__main__":
 #
 #    new_volume2, change_points, rotation_matrix_list, translation_vector_list = icp(orig_volume2,volume_points_1,volume_points_2,5)
 #            
-    plot = Visualization.DataVisulization(ndimage.gaussian_filter(orig_volume1,2), 80)
+    plot = Visualization.DataVisulization(de_volume1, 0.3)
     plot.contour3d()
-    plot = Visualization.DataVisulization(ndimage.gaussian_filter(orig_volume2,2), 70)
+    plot = Visualization.DataVisulization(de_volume2, 0.3)
     plot.contour3d()
+    
+    test = ndimage.median_filter(Refvolume.getOriginVolume()[:,:,60], 10)
+    
+    plt.figure(1)
+    plt.imshow(test,cmap='Greys_r')
+    plt.show()
+    
+    from skimage import exposure
+    
+    denoise_volume = exposure.rescale_intensity(test, in_range=(50,255))
+    
+    plt.figure(2)
+    plt.imshow(denoise_volume,cmap='Greys_r')
+    plt.show()
+    
+    denoise_volume2 = exposure.equalize_adapthist(denoise_volume,clip_limit=0.1)
+    
+    plt.figure(3)         
+    plt.imshow(ndimage.gaussian_filter(denoise_volume2,2),cmap='Greys_r')
+    plt.show()   
+    
+    from skimage.filters import threshold_otsu, threshold_adaptive
+    denoise_volume3 = threshold_adaptive(ndimage.gaussian_filter(denoise_volume2,2), 5, offset=0)
+    
+    plt.figure(4)
+    plt.imshow(denoise_volume3,cmap='Greys_r')
+    plt.show()
+    
 #        
 #    plot = Visualization.DataVisulization(ndimage.gaussian_filter(new_volume2,2), 80)
 #    plot.contour3d()
 #   
 #    stop
 #    
-#    #plt.imshow(Refvolume._denoise_volume[:,:,60],cmap='Greys_r')
-#    #plt.show()
+
+    
 #    #plt.imshow(active[:,:,50],cmap='Greys_r')
 #    #plt.show()
 #    plt.imshow(ndimage.gaussian_filter(Refvolume._binary_volume,2)[:,:,50],cmap='Greys_r')
