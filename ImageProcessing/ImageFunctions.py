@@ -158,7 +158,7 @@ def sliceThreshold(volume, block_size = 5):
     
     return segImg
 
-def DynamicRangeImage(Image, inRange, outRange=None):
+def DynamicRangeImage(Image, inRange, outRange=None, pad=False):
     """
     input:
         Image --- (N,d) numpy ndarray
@@ -167,29 +167,55 @@ def DynamicRangeImage(Image, inRange, outRange=None):
     """
     
     sx,sy,sz = Image.shape
-    
-    pad = 10
-    
-    output = np.empty((sx+2*pad, sy+2*pad, sz+2*pad)) 
-    print "the padded volume size is: " + str(output.shape)
-    
-    volume = np.empty_like(Image)
-    
-    for i in range(volume.shape[2]):
+    if pad:
         
-        volume[:,:,i] = rescale_intensity(Image[:,:,i], in_range=inRange)
+        pad = 10
 
-    output[pad:-pad, pad:-pad, pad:-pad] = volume
-    print "the input volume size is: " + str(Image.shape)
-    print "the padded volume size is: " + str(output.shape)
-    return output
+        output = np.empty((sx+2*pad, sy+2*pad, sz+2*pad)) 
+        #print "the padded volume size is: " + str(output.shape)
+        
+        volume = np.empty_like(Image)
+        
+        for i in range(volume.shape[2]):
+            
+            volume[:,:,i] = rescale_intensity(Image[:,:,i], in_range=inRange)
     
-def AdaptiveHistEqual(Image, Contrast=0.005):
+        output[pad:-pad, pad:-pad, pad:-pad] = volume
+        print "the input volume size is: " + str(Image.shape)
+        print "the padded volume size is: " + str(output.shape)
+        return output
+        
+    else:
+        
+        
+        volume = np.empty_like(Image)
+        
+        for i in range(volume.shape[2]):
+            
+            volume[:,:,i] = rescale_intensity(Image[:,:,i], in_range=inRange)
+    
+        print "the input volume size is: " + str(Image.shape)
+        print "the padded volume size is: " + str(volume.shape)
+        return volume
+        
+def HistEqual(Image):
     
     volume = np.empty_like(Image)
     
     for i in range(Image.shape[2]):
         
+        volume[:,:,i] = exposure.equalize_hist(Image[:,:,i])
+        
+    return volume
+    
+def AdaptiveHistEqual(Image, Contrast=0.005):
+    
+    sx, sy, sz = Image.shape
+    
+    volume = np.empty((sx, sy, sz),dtype=float)
+    
+    for i in range(Image.shape[2]):
+        print i
         volume[:,:,i] = exposure.equalize_adapthist(Image[:,:,i],clip_limit=Contrast)
         
     return volume
@@ -328,7 +354,7 @@ def ImageRescale255(array):
     """
     maxa = array.max()
     mina = array.min()
-    volume = 255*(array-mina)/(maxa-mina)
+    volume = 255.0*(array-mina)/(maxa-mina)
     return volume.astype(int)
     
 def ImageRescale1(array):
@@ -368,6 +394,69 @@ def AspectRatioPoins(Points,scale):
     normalized[:,2] = normalized[:,2]*(scale[1]-scale[0])+scale[0]
     
     return normalized
+    
+def hist_match(source, template):
+    """
+    Adjust the pixel values of a grayscale image such that its histogram
+    matches that of a target image
+
+    Arguments:
+    -----------
+        source: np.ndarray
+            Image to transform; the histogram is computed over the flattened
+            array
+        template: np.ndarray
+            Template image; can have different dimensions to source
+    Returns:
+    -----------
+        matched: np.ndarray
+            The transformed output image
+    """
+
+    oldshape = source.shape
+    source = source.ravel()
+    template = template.ravel()
+
+    # get the set of unique pixel values and their corresponding indices and
+    # counts
+    s_values, bin_idx, s_counts = np.unique(source, return_inverse=True,
+                                            return_counts=True)
+    t_values, t_counts = np.unique(template, return_counts=True)
+
+    # take the cumsum of the counts and normalize by the number of pixels to
+    # get the empirical cumulative distribution functions for the source and
+    # template images (maps pixel value --> quantile)
+    s_quantiles = np.cumsum(s_counts).astype(np.float64)
+    s_quantiles /= s_quantiles[-1]
+    t_quantiles = np.cumsum(t_counts).astype(np.float64)
+    t_quantiles /= t_quantiles[-1]
+
+    # interpolate linearly to find the pixel values in the template image
+    # that correspond most closely to the quantiles in the source image
+    interp_t_values = np.interp(s_quantiles, t_quantiles, t_values)
+
+    return interp_t_values[bin_idx].reshape(oldshape)
+    
+def IntensityNormalization(window):  
+    #sx, sy, sz = window.shape
+    #mean = window.mean()
+    #stad = window.std()
+    #outwindow = (window - mean)/stad
+    maxIntensity = window.max()
+    minIntensity = window.min()
+    window = (window - minIntensity) / (maxIntensity - minIntensity)
+    return window
+    
+def applyLogic(Image, logic):
+    
+    sx, sy, sz = Image.shape
+    
+    volume = np.empty_like(Image)
+    for i in range(sz):
+        volume[:,:,i] = Image[:,:,i] * logic
+        
+    return volume
+    
     
 if __name__ == "__main__":
     print "this is test file!"
