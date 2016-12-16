@@ -54,8 +54,13 @@ region1_def_hist = ImageProcessing.hist_match(region1_def, region1_ref)
     
 plot = Visualization.DataVisulization(ndimage.gaussian_filter(region1_ref,5), 90)
 plot.contour3d()
-plot = Visualization.DataVisulization(ndimage.gaussian_filter(region1_def_hist,5), 90)
-plot.contour3d()
 
-sio.savemat("/Users/junchaowei/Desktop/Region1/region1_ref.mat", {"par1":region1_ref})
-sio.savemat("/Users/junchaowei/Desktop/Region1/region1_def.mat", {"par1":region1_def_hist})
+#sxx, syy = im1[:,:,60].shape
+#mask = np.zeros((sxx,syy))
+#mask[280:500,90:350] = 1.0
+#plt.imshow(mask)
+
+sio.savemat("/Users/junchaowei/Desktop/Region2/mask.mat", {"par1":Index_logic})
+sio.savemat("/Users/junchaowei/Desktop/Region2/region2_ref.mat", {"par1":region1_ref})
+sio.savemat("/Users/junchaowei/Desktop/Region2/region2_def.mat", {"par1":region1_def_hist})
+
