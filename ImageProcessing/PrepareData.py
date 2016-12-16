@@ -1,6 +1,5 @@
 """
 this cleans the image, and separates the big image into pieces
-
 """
 
 import scipy.io as sio
@@ -10,9 +9,9 @@ import numpy as np
 import Visualization
 from scipy import ndimage
 
-volume000 = sio.loadmat('/Users/junchaowei/Desktop/SpaceRegistration_000_125/volume000.mat') # read the file     
+volume000 = sio.loadmat('F:\For JC\practice run/volume000.mat') # read the file     
 im1 = volume000['par1']#[280:500,90:350,:] #[350:450,150:250,:]                                                                                                                                                                                                                                                                                                       
-volume125 = sio.loadmat('/Users/junchaowei/Desktop/SpaceRegistration_000_125/volume125_regi.mat')# big region three point alignment 
+volume125 = sio.loadmat('F:\For JC\practice run/volume125_regi.mat')# big region three point alignment 
 im2 = volume125['par1']#[280:500,90:350,:]
 
 fig = plt.figure()
@@ -54,8 +53,12 @@ region1_def_hist = ImageProcessing.hist_match(region1_def, region1_ref)
     
 plot = Visualization.DataVisulization(ndimage.gaussian_filter(region1_ref,5), 90)
 plot.contour3d()
-plot = Visualization.DataVisulization(ndimage.gaussian_filter(region1_def_hist,5), 90)
-plot.contour3d()
 
-sio.savemat("/Users/junchaowei/Desktop/Region1/region1_ref.mat", {"par1":region1_ref})
-sio.savemat("/Users/junchaowei/Desktop/Region1/region1_def.mat", {"par1":region1_def_hist})
+#sxx, syy = im1[:,:,60].shape
+#mask = np.zeros((sxx,syy))
+#mask[280:500,90:350] = 1.0
+#plt.imshow(mask)
+
+sio.savemat("C:/Users/HT/Desktop/test run/combine regions/Region1/mask.mat", {"par1":Index_logic})
+sio.savemat("C:/Users/HT/Desktop/test run/combine regions/Region1/region1_ref.mat", {"par1":region1_ref})
+sio.savemat("C:/Users/HT/Desktop/test run/combine regions/Region1/region1_def.mat", {"par1":region1_def_hist})
