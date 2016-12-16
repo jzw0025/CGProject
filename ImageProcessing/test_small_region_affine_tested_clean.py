@@ -13,21 +13,36 @@ import ImageProcessing
 from scipy import linalg
 import SaveLoad
 import matplotlib.pyplot as plt
+from scipy import interpolate
 
 mlab.figure(bgcolor=(0.5,0.5,0.5), size=(400, 400)) # set the background color (r,g,b) form [0.0,1.0]
 
-volume000 = sio.loadmat('/Users/junchaowei/Desktop/SpaceRegistration_000_125/volume000.mat') # read the file     
-im1 = volume000['par1'][280:500,90:350,:] #[350:450,150:250,:]                                                                                                                                                                
+volume000 = sio.loadmat('F:\For JC\practice run/volume000.mat') # read the file     
+im1 = volume000['par1']#[280:500,90:350,:] #[350:450,150:250,:]                                                                                                                                                                
 
-volume125 = sio.loadmat('/Users/junchaowei/Desktop/SpaceRegistration_000_125/volume125_regi.mat')# big region three point alignment 
-im2 = volume125['par1'][280:500,90:350,:]
+volume125 = sio.loadmat('F:\For JC\practice run/volume125.mat')# big region three point alignment 
+im2 = volume125['par1']#[280:500,90:350,:]
 
-#im2_matched = ImageProcessing.hist_match(im2, im1) 
+im2_matched = ImageProcessing.hist_match(im2, im1) 
 
-plot = Visualization.DataVisulization(ndimage.gaussian_filter(im1,5), 110)
+plot = Visualization.DataVisulization(ndimage.gaussian_filter(im1,5), 70)
 plot.contour3d()
-plot2 = Visualization.DataVisulization(ndimage.gaussian_filter(im2_matched,5), 110)
+plot2 = Visualization.DataVisulization(ndimage.gaussian_filter(im2_matched,5), 70)
 plot2.contour3d()
+
+
+plt.figure(1)
+plt.imshow(im1[:,:,60], cmap = "Greys_r")
+plt.show()
+
+sy,sx = im1[:,:,0].shape
+registration_check = np.zeros((sy,sx,3))
+registration_check[:,:,0] = 255-im1[:,:,60]
+registration_check[:,:,1] = 255-im2[:,:,60]#.astype(int) # the float value must be converted into int color channel
+registration_check[:,:,2] = np.zeros((sy,sx))
+plt.figure(99)
+plt.imshow(registration_check)
+plt.show()
 
 nodes, elements = plot.surf_points, plot.surf_elements
 nodes2, elements2 = plot2.surf_points, plot2.surf_elements
@@ -115,44 +130,13 @@ def fixed_SVD(target, source):
     return source, Rotation, translation 
     
 
-#target = [[160.4781, 67.4563, 98.5035],
-#          [78.2743, 61.2716, 91.6028],
-#          [134.1423, 202.0158, 23.9250]
-#]
-#
-#source = [[165.1711, 60.5980, 93.3959],
-#          [80.9065, 57.1589, 83.5306],
-#          [140.9903, 200.2265, 14.6944]
-#]
-####
-#169.984298706 62.0 69.0
-#82.7631378174 116.0 88.0
-#23.0 121.318107605 50.0
-#
-#
-#####
-#172.88319397 55.0 65.0
-#86.0 106.616584778 82.0
-#22.2802658081 116.0 38.0
 
-target = [#[169.289224, 61.64974865, 68.6480713182],
-          #[80.85005994171, 119.954542582, 92.4645567757],
-          #[24.333310337, 123.787505034, 40.8373351782]]
-          ##[98.0599365234, 125.0, 98.0],
-          ##[154.0, 60.0, 63.7291679382],
-          ##[60.0, 39.0, 62.2636756897],
-          ##[24.0, 120.234558105, 39.0]]
-          [169.984298706, 62.0, 69.0],
-          [82.7631378174, 116.0, 88.0],
-          [23.0, 121.318107605, 50.0]]
 
-source = [#[173.003309567, 55.0856197723, 65.7475052708],
-          #[87.1716276972, 111.176978781, 84.5397344979],
-          #[25.7948696673, 115.444849584, 31.3839331913]]
-          ##[106.0, 119.69694519, 87.0],
-          ##[150.0, 54.9740638733, 69.0],
-          ##[68.0, 33.2200241089, 57.0],
-          ##[46.668964386, 129.0, 91.0]]
+target = [587.64642334 ,327.0 ,12.0
+        80.0, 169.0, 26.866645813
+        99.0, 403.0, 26.5643672943]]
+
+source = [
           [172.88319397, 55.0, 65.0],
           [86.0, 106.616584778, 82.0],
           [22.2802658081, 116.0, 38.0]]
@@ -195,28 +179,43 @@ for i in range(ix):
             
 newim3_map = ndimage.map_coordinates(im2_matched, [mapX, mapY, mapZ], order=1)
 
+nodeDisplacementX = np.empty(nodes.shape[0])        
+nodeDisplacementY = np.empty(nodes.shape[0]) 
+nodeDisplacementZ = np.empty(nodes.shape[0]) 
+for inode in range(nodes.shape[0]):
+    cord = np.array([nodes[inode][0],nodes[inode][1],nodes[inode][2],1])
+    new_cord = affineMatrix.dot(cord)
+    nodeDisplacementX[inode] = new_cord[0]-nodes[inode][0]
+    nodeDisplacementY[inode] = new_cord[1]-nodes[inode][1]
+    nodeDisplacementZ[inode] = new_cord[2]-nodes[inode][2]
+
+surf = plot.surf_points
+inter_z = interpolate.LinearNDInterpolator(nodes, nodeDisplacementY, fill_value=0.0, rescale=True)        
+extrapo_z = inter_z.__call__(surf)
+plot.plot3dpoint(extrapo_z)
+mlab.colorbar(object=None, title="test", orientation="vertical",nb_labels=20, nv_colors=None, label_fmt=None)
+
 #####
 plot3 = Visualization.DataVisulization(ndimage.gaussian_filter(newim3_map,5), 110)
 plot3.contour3d()
 plot4 = Visualization.DataVisulization(ndimage.gaussian_filter(newim3,5), 110)
 plot4.contour3d()
 
-#src3 = mlab.pipeline.scalar_field(ndimage.gaussian_filter(newim3,3))
-#mlab.pipeline.iso_surface(src3, contours=[70], colormap='Oranges')
 
-save = SaveLoad.saveDataBase("/Users/junchaowei/Desktop/SpaceRegistration_000_125/") 
+save = SaveLoad.saveDataBase("C:\Users\HT\Desktop/test run/") 
 datadict={}
-datadict['volume000'] = orig_volume1
-datadict['volume125'] = orig_volume2
-datadict['volume125_regi'] = newimage2
+datadict['volume000'] = nodeDisplacementX
+datadict['volume125'] = nodeDisplacementX
+datadict['volume125_regi'] = nodeDisplacementX
+datadict['target_point'] = im1
+datadict['source_point'] = im2_matched
+datadict['source_point'] = newim3
 datadict['target_point'] = target
 datadict['source_point'] = source
 save.save(datadict)
 
-newimage2[newimage2>255.0]=255
-newimage2[newimage2==0]=20
-###### multi-channel color images ####
 
+###### multi-channel color images ####
 sy,sx = im1[:,:,0].shape
 registration_check = np.zeros((sy,sx,3))
 registration_check[:,:,0] = 255-im1[:,:,70]
@@ -231,18 +230,11 @@ ix,iy,iz = im1.shape
 for i in range(iz):
     registration_check = np.zeros((sy,sx,3))
     registration_check[:,:,0] = 255-im1[:,:,i]
-    registration_check[:,:,1] = 255-im2[:,:,i].astype(int) # the float value must be converted into int color channel
+    registration_check[:,:,1] = 255-newim3[:,:,i].astype(int) # the float value must be converted into int color channel
     registration_check[:,:,2] = np.zeros((sy,sx))
     plt.figure(i)
     plt.imshow(registration_check)
     plt.show()
-    plt.savefig('/Users/junchaowei/Desktop/Local_model_prestine/' + str(i) + '.png')
+    plt.savefig('C:\Users\HT\Desktop/test run/stack/' + str(i) + '.png')
     plt.close()
 
-plt.figure(101)
-plt.imshow(registration_check[:,:,1])
-plt.show()
-1
-plt.figure(101)
-plt.imshow(orig_volume2[:,:,65])
-plt.show()
