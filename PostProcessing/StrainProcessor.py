@@ -151,7 +151,9 @@ if __name__ == "__main__":
     print "this a unit test process!"
     import SaveLoad
     import SpatialSampling
-    inputDVC = SaveLoad.DVCdata("/Users/junchaowei/Desktop/testRegistration3/")
+    import Visualization
+    import scipy.ndimage as ndimage
+    inputDVC = SaveLoad.DVCdata("/Users/junchaowei/Desktop/HighResolutionStrain/")
     point_arr1 = inputDVC.getPoints1()
     Sample_Density = 12
     
@@ -171,9 +173,36 @@ if __name__ == "__main__":
     strain = calculateStrain(point_arr1, mesh2.ntri, displacements, Sample_Density/2, 2)
     strain = np.array(strain)
     a = np.mean(strain,1)
-    smoothStrains(strain, mesh2.ntri,2)
+    smoothStrains(strain, mesh2.ntri,4)
     b =  np.mean(strain,1)
-    print a-b
+    
+    image1 = inputDVC.getImage1()
+    plot = Visualization.DataVisulization(image1, image1.mean()+1400)
+    plot.contour3d()
+    surf = plot.surf_points
+    inter_z = interpolate.LinearNDInterpolator(mesh2.points, strain[0,:], fill_value=0.0, rescale=True)        
+    extrapo_z = inter_z.__call__(surf)
+    plot.plot3dpoint(extrapo_z)
+    
+#### strain plot ####
+
+    ix, iy, iz = image1.shape
+    new_image1 = np.empty((ix+20,iy+20,iz+20))  
+    new_image1[20:-20,20:-20,20:-20] = image1[10:-10,10:-10,10:-10]
+    
+    trans_point = np.empty_like(mesh2.points)
+    trans_point[:,0] = mesh2.points[:,0] + 10  
+    trans_point[:,1] = mesh2.points[:,1] + 10
+    trans_point[:,2] = mesh2.points[:,2] + 10 
+    
+    plot = Visualization.DataVisulization(new_image1, 8000)
+    plot.contour3d()
+    surf = plot.surf_points
+    inter_z = interpolate.LinearNDInterpolator(trans_point, strain[5,:], fill_value=0.0, rescale=True)        
+    extrapo_z = inter_z.__call__(surf)
+    plot.plot3dpoint(extrapo_z)
+    
+    import mayavi
     
     
     
