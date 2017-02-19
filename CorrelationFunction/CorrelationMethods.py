@@ -4,7 +4,7 @@ this module rewrites the Correlation module, which only has a method.
 """
 
 import numpy as np
-import DccFort as FDCC
+#import DccFort as FDCC
 from numpy import unravel_index
 from numpy.linalg import inv
 from scipy.interpolate import RegularGridInterpolator

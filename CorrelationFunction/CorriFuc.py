@@ -1,5 +1,5 @@
 import numpy as np
-import DccFort as FDCC
+#import DccFort as FDCC
 from numpy import unravel_index
 from scipy import interpolate
 from scipy.interpolate import RegularGridInterpolator
@@ -9,7 +9,7 @@ import scipy.io as sio
 
 import scipy.interpolate as interp
 from scipy.interpolate import RegularGridInterpolator
-import Visulization
+import Visualization
 import scipy.ndimage as ndimage
 
 from pylab import imshow, show, get_cmap
