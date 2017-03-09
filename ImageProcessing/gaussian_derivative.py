@@ -367,7 +367,7 @@ index_target = []
 index_source = []
 for pi in range(d1.shape[0]):
     t_p1 = d1[pi,:]
-    ds = +inf
+    ds = 10**9
     index_target.append(pi)
     for ti in range(d2.shape[0]):
         temp = sqrt(sum((t_p1-d2[ti,:])**2))
