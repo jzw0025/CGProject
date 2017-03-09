@@ -51,7 +51,6 @@ def gauss3D(shape=(3,3,3),sigma=0.5):
         
 def createPoints(image1):
     sx, sy, sz = image1.shape
-    global lx,ly,lz
     ### matlab fspeical function python port:
     ### references: http://stackoverflow.com/questions/17190649/how-to-obtain-a-gaussian-filter-in-python
         
@@ -306,6 +305,10 @@ def getDescriptor(points):
         radius = int(size-1)/2 # half width of size
         # auto-correlation matrix
         weights =  gauss3D(shape=(size,size,size),sigma=(size-1)/4.0) # set up 3D gaussian kernal 
+        
+        Ix = filters.gaussian_filter(image1, sigma=s, order=[1,0,0]) # save this preiously can make a faster computation
+        Iy = filters.gaussian_filter(image1, sigma=s, order=[0,1,0])
+        Iz = filters.gaussian_filter(image1, sigma=s, order=[0,0,1])
         
         pIx = np.empty((sx+2*radius,sy+2*radius,sz+2*radius))
         pIx[radius:-radius,radius:-radius,radius:-radius] = Ix
