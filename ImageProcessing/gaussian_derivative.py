@@ -17,27 +17,24 @@ image1 = load['par1'][200:300,200:300,50:100]
 load = sio.loadmat('/Users/junchaowei/Desktop/Pack12122016/clean487_reg1.mat')
 image2 = load['par1'][200:300,200:300,50:100]
 
-
 ########### create a test volume ###########
-test_image1 = np.zeros((50,50,50))
-rnd_pts = 50*np.random.random([25,3])
-rnd_pts2 = rnd_pts.astype(int)
-for i in range(rnd_pts.shape[0]):
-    test_image1[rnd_pts2[i][0]][rnd_pts2[i][1]][rnd_pts2[i][2]] = 1   
-new_test_image1 = ndimage.binary_dilation(test_image1,iterations=3).astype(test_image1.dtype)
-smooth_new_test_image1 = ndimage.gaussian_filter(new_test_image1,2)
-v1 = Visualization.DataVisulization(smooth_new_test_image1,0.2) # initial reference image
-v1.contour3d()
-image1 = smooth_new_test_image1
+#test_image1 = np.zeros((50,50,50))
+#rnd_pts = 50*np.random.random([25,3])
+#rnd_pts2 = rnd_pts.astype(int)
+#for i in range(rnd_pts.shape[0]):
+#    test_image1[rnd_pts2[i][0]][rnd_pts2[i][1]][rnd_pts2[i][2]] = 1   
+#new_test_image1 = ndimage.binary_dilation(test_image1,iterations=3).astype(test_image1.dtype)
+#smooth_new_test_image1 = ndimage.gaussian_filter(new_test_image1,2)
+#v1 = Visualization.DataVisulization(smooth_new_test_image1,0.2) # initial reference image
+#v1.contour3d()
+#image1 = smooth_new_test_image1
 #plt.figure(1)
 #plt.imshow(image1[:,:,25])
 #plt.show()
 
-def createPoints(image1):
-    sx, sy, sz = image1.shape
-    ### matlab fspeical function python port:
-    ### references: http://stackoverflow.com/questions/17190649/how-to-obtain-a-gaussian-filter-in-python
-    def gauss3D(shape=(3,3,3),sigma=0.5):
+sx, sy, sz = image1.shape
+    
+def gauss3D(shape=(3,3,3),sigma=0.5):
         """
         3D gaussian mask - should give the same result as MATLAB's
         fspecial('gaussian',[shape],[sigma])
@@ -52,7 +49,17 @@ def createPoints(image1):
             h /= sumh
         return h
         
+def createPoints(image1):
+    sx, sy, sz = image1.shape
+    global lx,ly,lz
+    ### matlab fspeical function python port:
+    ### references: http://stackoverflow.com/questions/17190649/how-to-obtain-a-gaussian-filter-in-python
+        
     def lapGauss3D(shape=(3,3,3),std=0.5):
+        """
+        this function calculates the Laplacian of Gaussian
+        h is the exponential kernal, h1 is the full expression of LoG
+        """
         m,n,k = [(ss-1.)/2. for ss in shape]
         x = np.linspace(-m, m, 2*m+1)
         y = np.linspace(-n, n, 2*n+1)
@@ -66,8 +73,12 @@ def createPoints(image1):
         return h1 - h1.mean()
     
     def findLocalMaximum(val, radius):
-        
+        """
+        """
         def mask(radius): # create ball mask
+            """
+            this is the help function, it is a distance mask,on which the ones are placed.
+            """
             y,x,z = np.ogrid[-radius: radius+1, -radius: radius+1, -radius: radius+1]
             mask = x**2 + y**2 +z**2 <= radius**2
             return mask
@@ -81,12 +92,12 @@ def createPoints(image1):
         val_mask    = np.zeros((val_x+2*radius,val_y+2*radius,val_z+2*radius))
     
         val_enlarge[radius:val_x+radius,
-                    radius:val_y+radius,
-                    radius:val_z+radius] = val
+                           radius:val_y+radius,
+                           radius:val_z+radius] = val
                     
         val_mask[radius:val_x+radius,
-                radius:val_y+radius,
-                radius:val_z+radius] = 1
+                        radius:val_y+radius,
+                        radius:val_z+radius] = 1
                 
         msk = mask(radius) 
     
@@ -106,7 +117,7 @@ def createPoints(image1):
                     #neigh_sort = neigh_val[neigh_mask==1].flatten()
                     #neigh_sort.sort()
                     #if val_ref==neigh_sort[-1] and val_ref>neigh_sort[-2]: # saving time
-                    if val_ref == neigh_val[neigh_mask==1].max():
+                    if val_ref == neigh_val[neigh_mask==1].max(): # if this value is the local maximum value.
                         dimX.append(i)
                         dimY.append(j)
                         dimZ.append(k)
@@ -177,7 +188,6 @@ def createPoints(image1):
                                     
     #################### Laplace ###################   
     # compute scale-normalized laplacian operator
-    
     laplace_snlo = np.zeros((sx,sy,sz,len(sigma_array)))
     for i in range(len(sigma_array)):
         s_L = sigma_array[i] # scale
@@ -227,42 +237,41 @@ points3d(points1[0], points1[1], points1[2], points1[3], colormap="Greens", scal
 points3d(points2[0], points2[1], points2[2], points2[3], colormap="pink", scale_factor=1)
 
 def getDescriptor(points):
-
     ### icosahedron construction ###
     phi = (1.0 + sqrt(5.0))/2
     vertices =[[-1, phi,0],
-            [1, phi, 0],
-            [-1,-phi,0],
-            [1, -phi,0],
-            [0,-1, phi],
-            [0, 1, phi],
-            [0,-1,-phi],
-            [0, 1,-phi],
-            [phi,0, -1],
-            [phi, 0, 1],
-            [-phi,0,-1],
-            [-phi,0, 1]]
+                    [1, phi, 0],
+                    [-1,-phi,0],
+                    [1, -phi,0],
+                    [0,-1, phi],
+                    [0, 1, phi],
+                    [0,-1,-phi],
+                    [0, 1,-phi],
+                    [phi,0, -1],
+                    [phi, 0, 1],
+                    [-phi,0,-1],
+                    [-phi,0, 1]]
     
     elements = [[0,11,5],
-                [0,5, 1],
-                [0,1, 7],
-                [0,7,10],
-                [0,10,11],
-                [1,5, 9],
-                [5,11,4],
-                [11,10,2],
-                [10,7,6],
-                [7,1,8],
-                [3,9,4],
-                [3,4,2],
-                [3,2,6],
-                [3,6,8],
-                [3,8,9],
-                [4,9,5],
-                [2,4,11],
-                [6,2,10],
-                [8,6,7],
-                [9,8,1]]
+                        [0,5, 1],
+                        [0,1, 7],
+                        [0,7,10],
+                        [0,10,11],
+                        [1,5, 9],
+                        [5,11,4],
+                        [11,10,2],
+                        [10,7,6],
+                        [7,1,8],
+                        [3,9,4],
+                        [3,4,2],
+                        [3,2,6],
+                        [3,6,8],
+                        [3,8,9],
+                        [4,9,5],
+                        [2,4,11],
+                        [6,2,10],
+                        [8,6,7],
+                        [9,8,1]]
                 
     vertices = np.array(vertices)
     elements = np.array(elements)            
@@ -294,7 +303,7 @@ def getDescriptor(points):
         s = floor(points[3][n_points])
         
         size = int(floor(6*s+1))  
-        radius = int(size-1)/2  
+        radius = int(size-1)/2 # half width of size
         # auto-correlation matrix
         weights =  gauss3D(shape=(size,size,size),sigma=(size-1)/4.0) # set up 3D gaussian kernal 
         
@@ -312,13 +321,13 @@ def getDescriptor(points):
         wIz = pIz[x:x+2*radius+1,y:y+2*radius+1,z:z+2*radius+1]*weights 
         
         quand = [[0,radius,0,radius,0,radius],
-                [0,radius,0,radius,radius,size],
-                [0,radius,radius,size,0,radius],
-                [0,radius,radius,size,radius,size],
-                [radius,size,0,radius,0,radius],
-                [radius,size,0,radius,radius,size],
-                [radius,size,radius,size,0,radius],
-                [radius,size,radius,size,radius,size]] # Eight Quandrant
+                      [0,radius,0,radius,radius,size],
+                      [0,radius,radius,size,0,radius],
+                      [0,radius,radius,size,radius,size],
+                      [radius,size,0,radius,0,radius],
+                      [radius,size,0,radius,radius,size],
+                      [radius,size,radius,size,0,radius],
+                      [radius,size,radius,size,radius,size]] # Eight Quandrant
         
         bins = np.zeros((8,20)) # this arrangement is the same as normals
         q_index = 0

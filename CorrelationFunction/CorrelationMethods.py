@@ -599,7 +599,7 @@ class CornerDetector:
         """
         This method implements the Harris Corner Detection Algorithm
         image1 dim: 
-        points dim: 1 by 3
+        points dim: 1 by 3 (the points are imported by the mesh points)
 
         """
         points = points + self.subsearch # offset points in padded image.
