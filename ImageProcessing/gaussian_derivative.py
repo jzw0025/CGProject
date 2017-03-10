@@ -365,6 +365,7 @@ d2 = getDescriptor(points2)
 
 index_target = []
 index_source = []
+tempdis = []
 for pi in range(d1.shape[0]):
     t_p1 = d1[pi,:]
     ds = 10**9
@@ -375,6 +376,7 @@ for pi in range(d1.shape[0]):
             ds = temp
             target_index = ti
     index_source.append(target_index) # must be at outside of loop 
+    tempdis.append(temp)
     
 v1 = Visualization.DataVisulization(image2,image2.mean()) # initial reference image
 v1.contour3d()
@@ -387,6 +389,7 @@ v1.contour3d()
 points3d(points1[0], points1[1], points1[2], points1[3], colormap="Greens", scale_factor=0.5)
 points3d(points2[0], points2[1], points2[2], points2[3], colormap="pink", scale_factor=0.5)
 
+pairs = []
 for ri in range(len(index_target)):
     x, y, z = [], [], []
     x.append(points1[0][index_target[ri]])
@@ -401,7 +404,11 @@ for ri in range(len(index_target)):
     x = np.array(x).astype(float)
     y = np.array(y).astype(float)
     z = np.array(z).astype(float)
-    plot3d(x, y, z, tube_radius=0.25, colormap='Spectral')
+    
+    dist = np.sqrt((x[1]-x[0])**2 + (y[1]-y[0])**2 + (z[1]-z[0])**2)
+    if dist <10:
+        pairs.append([[x[0],y[0],z[0]],[x[1],y[1],z[1]]])
+        plot3d(x, y, z, tube_radius=0.25, colormap='Spectral')
 
 
 #x.extend([points1[0][0],points2[0][0]])
