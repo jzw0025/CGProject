@@ -397,7 +397,7 @@ for ri in range(len(index_target)):
 
     y.append(points1[1][index_target[ri]])
     y.append(points2[1][index_source[ri]])
-    
+     
     z.append(points1[2][index_target[ri]])
     z.append(points2[2][index_source[ri]])
     
