@@ -7,6 +7,7 @@ import scipy.io as sio
 from skimage.exposure import rescale_intensity
 from skimage.filters import threshold_otsu, threshold_adaptive
 from skimage.measure import EllipseModel
+from skimage.feature import *
 from skimage.segmentation import active_contour
 import math
 import matplotlib.pyplot as plt
@@ -457,6 +458,25 @@ def applyLogic(Image, logic):
         
     return volume
     
+def Log3D(image2, threshold=.3):
+    """
+    3D laplacian of gaussian.
+        Image --- Nd
+    Return:
+        nd narray points
+    """
+    sx, sy, sz = image2.shape
+    points = []
+    for i in range(sz):
+        if image2[:,:,i].mean() !=0:
+            print i 
+            temp = feature.blob_log(image2[:,:,i], threshold = .3)
+            itemp = np.insert(temp,2,i, axis = 1)
+        points.extend(itemp.tolist())
+    #points = np.array(points)
+    #x, y, z, s = points[:,0], points[:,1], points[:,2], points[:,3]
+    #points3d(x, y, z, scale_factor=.75)
+    return points
     
 if __name__ == "__main__":
     print "this is test file!"
