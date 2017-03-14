@@ -12,6 +12,8 @@ from skimage.segmentation import active_contour
 import math
 import matplotlib.pyplot as plt
 from skimage import exposure
+from mayavi import mlab
+import mayavi
 
 ##############
 # 
@@ -477,6 +479,20 @@ def Log3D(image2, threshold=.3):
     #x, y, z, s = points[:,0], points[:,1], points[:,2], points[:,3]
     #points3d(x, y, z, scale_factor=.75)
     return points
+    
+def createPoints_sober(image1):
+        Ix = ndimage.sobel(image1,0) # pre-calculate the derivatives
+        Iy = ndimage.sobel(image1,1)
+        Iz = ndimage.sobel(image1,2)
+        Ix2 = Ix*Ix
+        Iy2 = Iy*Iy
+        Iz2 = Iz*Iz
+        Ixy = Ix*Iy
+        Ixz = Ix*Iz
+        Iyz = Iy*Iz
+        k = 0.06 
+        I_feature = (Ix2*Iy2*Iz2 + Ixy*Iyz*Ixz + Ixy*Iyz*Ixz - Ixy*Ixy*Iz2 - Iyz*Iyz*Ix2 - Ixz*Ixz*Iy2) - k*(Ix2 + Iy2 +Iz2)**3 
+        return I_feature
     
 if __name__ == "__main__":
     print "this is test file!"
