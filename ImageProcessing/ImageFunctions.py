@@ -481,6 +481,7 @@ def Log3D(image2, threshold=.3):
     return points
     
 def createPoints_sober(image1):
+    
         Ix = ndimage.sobel(image1,0) # pre-calculate the derivatives
         Iy = ndimage.sobel(image1,1)
         Iz = ndimage.sobel(image1,2)
