@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 from mayavi import mlab
 from mayavi.mlab import *
 
-def getDescriptor(image1,points):
+def getDescriptor(image1, points):
     ### icosahedron construction ###
     phi = (1.0 + sqrt(5.0))/2
     vertices =[[-1, phi,0],
@@ -70,7 +70,7 @@ def getDescriptor(image1,points):
     #points3d(center[:,0], center[:,1], center[:,2], colormap="Greens", scale_factor=0.1)
     
     #### bins and histogram
-    s = floor(0.7*points[3][0]/3)
+    s = floor(0.7*points[3][0]/3) # this has been controlled by the harris points generator
     sx, sy, sz = image1.shape
     
     Ix = filters.gaussian_filter(image1, sigma=s, order=[1,0,0]) # save this preiously can make a faster computation
