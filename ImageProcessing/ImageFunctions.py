@@ -494,6 +494,20 @@ def createPoints_sober(image1):
         k = 0.06 
         I_feature = (Ix2*Iy2*Iz2 + Ixy*Iyz*Ixz + Ixy*Iyz*Ixz - Ixy*Ixy*Iz2 - Iyz*Iyz*Ix2 - Ixz*Ixz*Iy2) - k*(Ix2 + Iy2 +Iz2)**3 
         return I_feature
+        
+def imagePading(image,padsize = 1):
+    """
+    inputs:
+        image --- Nd array
+    outputs:
+        imageP  --- Nd array
+    """
+    sx,sy,sz = image.shape
+    imageP = np.empty((sx+2*padsize, sy+2*padsize, sz+2*padsize))
+    imageP[1:-1, 1:-1, 1:-1] = image
+    
+    return imageP
+    
     
 if __name__ == "__main__":
     print "this is test file!"
