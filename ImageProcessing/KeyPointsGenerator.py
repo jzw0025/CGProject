@@ -6,6 +6,7 @@ from math import *
 from scipy.ndimage import filters
 from scipy import ndimage
 from mayavi.mlab import *
+import LocalMaximum # fortran implementation local maximum, cubic radius
 
 def gauss3D(shape=(3,3,3),sigma=0.5):
         """
@@ -49,9 +50,13 @@ def mask(radius): # create ball mask
 
 def findLocalMaximum(val, radius):
         """
+        python implementation of local maximum
         return the local maximum point
         val --- featured multidimension image
         radius --- local radius
+        return:
+            # dimX, dimY, dimZ --- list of index
+            matrix of local maximas
         """
         radius = int(radius)
         
@@ -82,26 +87,49 @@ def findLocalMaximum(val, radius):
                         dimY.append(j)
                         dimZ.append(k)
                         max_local[i,j,k] = val_ref              
-        return dimX,dimY,dimZ,max_local
+        return dimX, dimY, dimZ, max_local
+        
+def findLocalMaximum_f(val, radius):
+    """
+    fortran implementation
+    """
+    print "the processed kernal radius is:" + str(radius)
+    
+    radius = int(radius)
+        
+    val_x = int(val.shape[0])
+    val_y = int(val.shape[1])
+    val_z = int(val.shape[2])
+    
+    val_enlarge = np.zeros((val_x+2*radius,val_y+2*radius,val_z+2*radius))
+    val_enlarge[radius:val_x+radius, radius:val_y+radius, radius:val_z+radius] = val # making artificial boundary    
 
-def createPoints(image1, density=0.1 ):
+    sx, sy, sz = val_enlarge.shape
+    
+    out = LocalMaximum.localmaximum(val_enlarge, radius, sx, sy, sz)
+    
+    return out
+    
+def createPoints(image1, density=0.1):
     sx, sy, sz = image1.shape
     # scale paramter
     sigma_begin = 1.5
     sigma_step = 1.2
-    sigma_nb = 1
+    sigma_nb = 5
     sigma_array = []
     for i in range(sigma_nb):
         sigma_array.append(sigma_step**(i)*sigma_begin) 
     harris_pts = [[],[],[],[]]
     for i in range(len(sigma_array)):
         s_I = sigma_array[i] # integration scale
+        print s_I
         s_D = 0.7*s_I # derivative scale 0.7
         Ix = filters.gaussian_filter(image1, sigma=s_D, order=[1,0,0])
         Iy = filters.gaussian_filter(image1, sigma=s_D, order=[0,1,0])
         #Iz = filters.gaussian_filter(image1, sigma=s_D, order=[0,0,1])
         size = max(1, floor(6*s_I+1))
         g = gauss3D(shape=(size,size,size), sigma=s_I) # set up 3D gaussian kernal 
+        
         Ix2 = signal.fftconvolve(Ix*Ix,g,mode='same')        
         Iy2 = signal.fftconvolve(Iy*Iy,g,mode='same')
         #Iz2 = signal.fftconvolve(Iz*Iz,g,mode='same')
@@ -113,7 +141,11 @@ def createPoints(image1, density=0.1 ):
         cim = Ix2*Iy2 - Ixy**2 - k*(Ix2 + Iy2)**2
         #cim2 = Ix2*Iz2 - Ixz**2 - k*(Ix2 + Iz2)**2
         #cim3 = Iy2*Iz2 - Iyz**2 - k*(Iy2 + Iz2)**2
-        ix,iy,iz,ival = findLocalMaximum(cim,3*s_I)
+        
+        #ix,iy,iz,ival = findLocalMaximum(cim,3*s_I)  # python
+        
+        ival = findLocalMaximum_f(cim,3*s_I) # fortran
+        
         # set the threshold 2% iif the maximum
         t = density*ival.max()
         ix,iy,iz = np.where(ival>t)
@@ -123,12 +155,13 @@ def createPoints(image1, density=0.1 ):
         harris_pts[2].extend(iz.tolist())
         harris_pts[3].extend([i]*n)
         print  "generator points number: " + str(len(harris_pts[0]))
-                                 
+                         
+    #sx, sy, sz = image1.shape                             
     laplace_snlo = np.zeros((sx,sy,sz,len(sigma_array)))
     for i in range(len(sigma_array)):
         s_L = sigma_array[i] 
-        LoG = lapGauss3D(shape=(floor(6*s_I+1),floor(6*s_I+1),floor(6*s_I+1)), std=s_L)
-        laplace_snlo[:,:,:,i] = signal.fftconvolve(image1,LoG,mode='same')
+        LoG = lapGauss3D(shape=(floor(6*s_L+1),floor(6*s_L+1),floor(6*s_L+1)), std=s_L)
+        laplace_snlo[:,:,:,i] = s_L*s_L*signal.fftconvolve(image1,LoG,mode='same')
     
     nub = len(harris_pts[0])
     points = [[],[],[],[]] 
@@ -164,8 +197,13 @@ def createPoints(image1, density=0.1 ):
                     points[1].append(iyy)
                     points[2].append(izz)
                     points[3].append(3*sigma_array[s]) 
+                    
+        #points[0].append(ixx)
+        #points[1].append(iyy)
+        #points[2].append(izz)
+        #points[3].append(3*sigma_array[s]) 
                 
-    return points 
+    return points
     
 def createPoints_sober(image1):
         Ix = ndimage.sobel(image1,0) 
@@ -201,13 +239,19 @@ if __name__ == "__main__":
     import skimage13 as skimage
     from skimage.transform import pyramid_gaussian
         
-    out = createPoints(image1[100:300,100:300,0:100])
+    volume000 = sio.loadmat('/Users/junchaowei/Desktop/Pack12122016/clean_000.mat') # read the file     
+    image1 = volume000['par1']                                                                                                                                                                                                                                                                                          
+
+    out = createPoints(image1[100:400,100:400,0:100])  # the region for correlation is limited
+    
+    stop
+    
     out2 = createPoints(image2[100:300,100:300,0:100])
 
     x, y, z = out[0], out[1], out[2]
     points3d(x, y, z, colormap="Greens",scale_factor=10)
     import Visualization
-    v1 = Visualization.DataVisulization(imagePading(image1[100:300,100:300,0:100]),0.2) # initial reference image
+    v1 = Visualization.DataVisulization(imagePading(image1[100:400,100:400,0:100]),0.1) # initial reference image
     v1.contour3d()
     
     x2, y2, z2 = out2[0], out2[1], out2[2]

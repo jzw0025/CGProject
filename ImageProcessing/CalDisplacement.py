@@ -209,6 +209,12 @@ if __name__ == "__main__":
     
     # generating out,out2
     
+    out = createPoints(image1[100:300,100:300,0:100])
+    out2 = createPoints(image2[100:300,100:300,0:100])
+    
+    d1 = getDescriptor(image1[100:300,100:300,0:100],out)
+    d2 = getDescriptor(image2[100:300,100:300,0:100],out2)
+    
     pair_index = minFeaturePairing(d1, d2)
     pairs = computePairs(out, out2, pair_index[0], pair_index[1])
 
