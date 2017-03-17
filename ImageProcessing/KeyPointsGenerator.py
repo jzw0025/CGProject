@@ -240,13 +240,15 @@ if __name__ == "__main__":
     from skimage.transform import pyramid_gaussian
         
     volume000 = sio.loadmat('/Users/junchaowei/Desktop/Pack12122016/clean_000.mat') # read the file     
-    image1 = volume000['par1']                                                                                                                                                                                                                                                                                          
+    image1 = volume000['par1']  
+    
+    volume000 = sio.loadmat('/Users/junchaowei/Desktop/Pack12122016/clean_487.mat') # read the file     
+    image2 = volume000['par1']                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
 
-    out = createPoints(image1[100:400,100:400,0:100])  # the region for correlation is limited
+    out = createPoints(image1[100:300,100:300,0:100])  # the region for correlation is limited
+    out2 = createPoints(image2[100:300,100:300,0:100])
     
     stop
-    
-    out2 = createPoints(image2[100:300,100:300,0:100])
 
     x, y, z = out[0], out[1], out[2]
     points3d(x, y, z, colormap="Greens",scale_factor=10)
