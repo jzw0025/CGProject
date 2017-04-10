@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html >
+  <head>
+    <meta charset="UTF-8">
+    <title>A Pen by  Jerry Wei</title>
+    
+    
+    
+    
+        <link rel="stylesheet" href="css/style.css">
+
+    
+    
+    
+  </head>
+
+  <body>
+
+    <h1> DVC Package Usage </h1>
+<p> This documentation is to illustrate the installation and usage of Digital Volume Correlation (DVC) Package by <em> <b> <a src="https://www.linkedin.com/profile/view?id=AAMAAA0uSfgBAmg37ISoSWtW23bwbwAqAfqrsuI&trk=hp-identity-name"> <u> Junchao Wei</u> </a> </b> </em>  </p>
+<p> The Whole Package has been developed by the Python as shell language with the Fortran as internal compling language. </p>
+<ol>
+  <li>
+    <h3> The package has been developed as the following several stages:</h3></li>
+  <ul>
+    <li> Load Files </li>
+    <li> Image Processing </li>
+    <li> Model Generation </li>
+    <li> DVC Computation </li>
+    <li> Mesher</li>
+  </ul>
+  <li>
+    <h3> The .py file associated with the stages are grouped as following: </h3></li>
+
+  <table id="table1">
+    <tr>
+      <th>Stages</th>
+      <th>Files</th>
+      <th>Descripts</th>
+    </tr>
+
+    <tr>
+      <td> Load Files</td>
+      <td>LoadTiff/LoadDicom</td>
+      <td>The package can load:
+        <b>dicom</b> images stack or <b>tiff</b> image stack
+      </td>
+    </tr>
+    <tr>
+      <td> Image Processing </td>
+      <td> scripy.ndimage </td>
+      <td> The Image Processing performs the preprocessing and transforms the image into a distance image</td>
+    </tr>
+    <tr>
+      <td> Model Generation </td>
+      <td>PoissonDisk/DataVisu</td>
+      <td>The Model Generation descritizes the 3D domain and puts the node samples into the computational domain</td>
+    </tr>
+    <tr>
+      <td>DVC Computation</td>
+      <td>CorriFuc</td>
+      <td>This is the core part for the DVC package, it calculates the relative deformation between two volumes.</td>
+    </tr>
+    <tr>
+      <td>Mesher</td>
+      <td> DelaunayMesh/mayavi.mlab</td>
+      <td>This module is Junchao's mesher for Finite Element Method Modeling</td>
+    </tr>
+  </table>
+  <p> </p>
+  <li>
+    <h3> How to install and run the Package</h3> </li>
+  <ol>
+    <li>To install the package:</li>
+    <ul>
+      <li>download the package <b>Python_DVC</b>
+      </li>
+      <li>download the fortran compiler from GNU gfortran open source compiler</li>
+      <li>compile the two fortran files <b>1) Poissson Disk Sampling</b> <b>2) correlation function</b></li>
+    </ul>
+    <li>To run the package:</li>
+    <ul>
+      <li>open the terminal, and go to the current directory using command "cd ...", and make sure the main GUI file <b>DVC Platform</b> is inside of the folder by command line "ls"</li>
+      <li> In the terminal, type: "python DVC_Platform.py" to run the DVC GUI</li>
+    </ul>
+  </ol>
+  <li>
+    <h3>For the Fortran-Python Compiler file:</h3></li>
+  <ul>
+    <li>Check the original f2py simple tutorial <a href="http://www.engr.ucsb.edu/~shell/che210d/f2py.pdf"><b>HERE</b></a></li>
+    <li>The standard compiler language is "f2py –c –m MODULENAME SOURCE.f90 --fcompiler=gnu95 --compiler=mingw32"</li>
+    <li>In the DVC correlation module, the fortran source file is "DccFortran.f90", and the target compiled file is "DccFort".</li>
+    <li> In the DVC sampling modue, the fortran source file is "Sampling.f90", and the target compiled file is "DiskSampling"</li>
+ 
+  <li>If the compiling passed successfully, there will generate two files: <b>(1)DccFort.exe(windows)/DccFort.so(Linux)(2)DiskSampling.exe(windows)/DiskSampling.so(Linux)</b></li> </ul>
+
+
+</ol>
+    
+    
+    
+    
+    
+  </body>
+</html>
