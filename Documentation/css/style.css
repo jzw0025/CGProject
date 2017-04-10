@@ -1,0 +1,41 @@
+body {
+  background-color:#58ACFA
+    
+}
+
+h1 {
+  text-align:center;
+  color:BLue;  
+}
+
+th {
+    background-color: Blue;
+    color: white;
+}
+
+table {
+    border-collapse: collapse;
+}
+
+table#table1 {
+    width:70%; 
+    margin-left:15%; 
+    margin-right:15%;
+  }
+
+table, td,  th {
+    border: 1px solid blue;    
+}
+
+table td {
+  text-align:center;
+}
+
+
+a {
+  color: Blue;
+}
+
+.competition {
+  color: #FF0000;
+}

@@ -1,23 +1,19 @@
 <!DOCTYPE html>
 <html >
-  <head>
-    <meta charset="UTF-8">
-    <title>A Pen by  Jerry Wei</title>
-    
-    
-    
-    
-        <link rel="stylesheet" href="css/style.css">
+<head>
+  <meta charset="UTF-8">
+  <title>A Pen by  Jerry Wei</title>
+  
+  
+  
+      <link rel="stylesheet" href="css/style.css">
 
-    
-    
-    
-  </head>
+  
+</head>
 
-  <body>
-
-    <h1> DVC Package Usage </h1>
-<p> This documentation is to illustrate the installation and usage of Digital Volume Correlation (DVC) Package by <em> <b> <a src="https://www.linkedin.com/profile/view?id=AAMAAA0uSfgBAmg37ISoSWtW23bwbwAqAfqrsuI&trk=hp-identity-name"> <u> Junchao Wei</u> </a> </b> </em>  </p>
+<body>
+  <h1> DVC Package Installation and Usage Tutorial </h1>
+<p> This documentation is to illustrate the installation and usage of Digital Volume Correlation (DVC) Package by <em> <b> <a href="https://www.linkedin.com/profile/view?id=AAMAAA0uSfgBAmg37ISoSWtW23bwbwAqAfqrsuI&trk=hp-identity-name"> <u> Junchao Wei</u> </a> </b> </em>  </p>
 <p> The Whole Package has been developed by the Python as shell language with the Fortran as internal compling language. </p>
 <ol>
   <li>
@@ -36,7 +32,7 @@
     <tr>
       <th>Stages</th>
       <th>Files</th>
-      <th>Descripts</th>
+      <th>Descriptions</th>
     </tr>
 
     <tr>
@@ -85,21 +81,49 @@
     </ul>
   </ol>
   <li>
-    <h3>For the Fortran-Python Compiler file:</h3></li>
+    <h3> Fortran Compiler Installation:</h3>
+    <ul>
+      <li>The fortran compiler can be installed and used GNU95(gfortran) fortran compiler. </li>
+      <li> The GNU fortran compiler for MAC-OS and Windows can be found in the <b>LINK</b>
+        <a href="https://gcc.gnu.org/wiki/GFortranBinaries"> <b>HERE1</b></a> and <a href="http://mingw-w64.org/doku.php"><b>HERE2!</b></a></li>
+      <li> Once installed, to check the available fortran compiler, it can use the <b>command:"f2py -c --help-fcompiler."</b></li>
+      <li>In this project, we use the fcompiler=gnu95</li>
+    </ul>
+
+  </li>
+
+  <li>
+    <h3>For the Fortran-Python Compiler file: <b>""</b></h3></li>
   <ul>
     <li>Check the original f2py simple tutorial <a href="http://www.engr.ucsb.edu/~shell/che210d/f2py.pdf"><b>HERE</b></a></li>
     <li>The standard compiler language is "f2py –c –m MODULENAME SOURCE.f90 --fcompiler=gnu95 --compiler=mingw32"</li>
     <li>In the DVC correlation module, the fortran source file is "DccFortran.f90", and the target compiled file is "DccFort".</li>
     <li> In the DVC sampling modue, the fortran source file is "Sampling.f90", and the target compiled file is "DiskSampling"</li>
- 
-  <li>If the compiling passed successfully, there will generate two files: <b>(1)DccFort.exe(windows)/DccFort.so(Linux)(2)DiskSampling.exe(windows)/DiskSampling.so(Linux)</b></li> </ul>
 
-
+    <li>If the compiling passed successfully, there will generate two files: <b>(1)DccFort.exe(windows)/DccFort.so(Linux)(2)DiskSampling.exe(windows)/DiskSampling.so(Linux)</b></li>
+    <li>Two important compiling command:
+      <ul>
+        <li><b>(1)"f2py –c –m DccFort DccFortran.f90 --fcompiler=gnu95 --compiler=mingw32"</b></li>
+        <li> <b>(2)"f2py –c –m DiskSampling Sampling.f90 --fcompiler=gnu95 --compiler=mingw32"</b></li>
+      </ul>
+    </li>
+  </ul>
 </ol>
-    
-    
-    
-    
-    
-  </body>
+
+<h1> DVC Package Scrips Usage </h1>
+<P> The usage of each module in the DVC package will be introduced and discussed.</P>
+<p>First of all, we are introducing the <b>Load Files</b> module.</p>
+<ol>
+  <li> Load the <b>DICOM</b> files </li>
+  <li> Load the <b>TIFF</b> files.</li>
+</ol>
+<p>The Imaging Processing Module provides the image processing tool to select the grayscale threshold for compuation and redering</p>
+<ol>
+  <li> The Image raw data will be stored in the folder named <b>Image_Data</b>. There are two sub-folders in the raw data image. One is the reference image folder, and another is deformed image folder.</li>
+  <li> Using the LoadFiles module to load the image stack, there are two modules: <b>1. Dicom Module</b> and <b> Tiff Module.</b></li>
+  <li> To check the availale Fortran Compiler: Runing the command: "f2py -c --help-fcompiler"</li>
+</ol>
+  
+  
+</body>
 </html>
