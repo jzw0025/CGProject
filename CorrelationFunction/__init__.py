@@ -12,4 +12,5 @@ from CorrelationMethods import KLT
 from CorrelationMethods import ConnectMesh
 from CorrelationMethods import ICP
 from CorrelationMethods import CornerDetector
+from CorrelationMethods import *
 #from module import moduletest

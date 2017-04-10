@@ -47,9 +47,9 @@ class DynamicObjects(object):
                 self.center = center
                 
         ## object moving vector (to recover the old points set)
-        self.move_vector = (self.center[0]-points[0,:].mean(),
-                            self.center[1]-points[1,:].mean(),
-                            self.center[2]-points[2,:].mean()) # tuple for storing the center vectors
+        self.move_vector = (self.center[0]-self.points[0,:].mean(),
+                            self.center[1]-self.points[1,:].mean(),
+                            self.center[2]-self.points[2,:].mean()) # tuple for storing the center vectors
         
         ## color
         if color is None:
@@ -71,9 +71,9 @@ class DynamicObjects(object):
                 self.points[2,:] = self.points[2,:] + self.move_vector[2]
             else:
                 self.points = points
-                self.points[0,:] = self.points[0,:] + self.move_vector[0] # centralize the points array
-                self.points[1,:] = self.points[1,:] + self.move_vector[1] # apply the new center
-                self.points[2,:] = self.points[2,:] + self.move_vector[2]
+                self.points[0,:] = self.points[0,:] - self.points[0,:].mean() + self.center[0] # centralize the points array
+                self.points[1,:] = self.points[1,:] - self.points[1,:].mean() + self.center[1] # apply the new center
+                self.points[2,:] = self.points[2,:] - self.points[2,:].mean() + self.center[2]
      
         ### elements ###
         if type(elements) != np.ndarray:
@@ -91,8 +91,6 @@ class DynamicObjects(object):
                                  
         ### input normals ###  
         self.normals = normals  
-        self.gl_normals = None
-        
         if self.normals is not None:
             if type(self.normals) != np.ndarray:
                 raise TypeError("the input normals type is not numpy nd array")  
@@ -199,21 +197,6 @@ class DynamicObjects(object):
                 out.append(j)
     
         return out # create a big set with tuple elements
-        
-    def getOriginClipPlane(self,clipPlaneObject):
-        """
-        this method gets clip plane for the original coordinator object
-        """
-        x1_c = clipPlaneObject.x1 - self.move_vector[0]
-        x2_c = clipPlaneObject.x2 - self.move_vector[0]
-        
-        y1_c = clipPlaneObject.y1 - self.move_vector[1]
-        y2_c = clipPlaneObject.y2 - self.move_vector[1]
-        
-        z1_c = clipPlaneObject.z1 - self.move_vector[2]
-        z2_c = clipPlaneObject.z2 - self.move_vector[2]
-        
-        return(x1_c,x2_c,y1_c,y2_c,z1_c,z2_c)     
                                                     
     def applyClipPlane(self, clipPlaneObject):
         
