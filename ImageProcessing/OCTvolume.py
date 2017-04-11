@@ -372,9 +372,6 @@ if __name__ == "__main__":
     import Visualization
     from scipy import ndimage
     
-    #Refvolume2 = RefVolume("/Users/junchaowei/Desktop/Python_DVC2/UP_Research/WholeRegionRealData/JunchaoFirstRun/M6_OD/M6_OD_baseline_C-scan/")
-    #Defvolume = DefVolume("/Users/junchaowei/Desktop/Python_DVC2/UP_Research/WholeRegionRealData/JunchaoFirstRun/M6_OD/M6_OD_125_C-scan/")
-
     Refvolume = RefVolume("/Users/junchaowei/Desktop/SpaceRegistration_000_125/volume000.mat")
     Defvolume = DefVolume("/Users/junchaowei/Desktop/SpaceRegistration_000_125/volume125_regi.mat") 
     
