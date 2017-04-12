@@ -12,7 +12,7 @@
 </head>
 
 <body>
-  <h1> DVC Package Installation and Usage Tutorial </h1>
+  <h1> DVC Package General Installation Guide and Module Description </h1>
 <p> This documentation is to illustrate the installation and usage of Digital Volume Correlation (DVC) Package by <em> <b> <a href="https://www.linkedin.com/profile/view?id=AAMAAA0uSfgBAmg37ISoSWtW23bwbwAqAfqrsuI&trk=hp-identity-name"> <u> Junchao Wei</u> </a> </b> </em>  </p>
 <p> The Whole Package has been developed by the Python as shell language with the Fortran as internal compling language. </p>
 <ol>
@@ -23,10 +23,11 @@
     <li> Image Processing: (1) Image Denoising;   (2) Image Segmentation;     (3) Image Transformation; </li>
     <li> Model Generation: (1) Domain Creation;   (2) Geometry Discretization; (3) Mesh Generation;</li>
     <li> DVC Computation:  (1) Initial Searching; (2) ICP Optimization; </li>
-    <li> Mesher Postprocess: </li>
+    <li> Postprocess: (1) Data Visualization; (2) Strain computation (3) Displacement Validation; </li>
+    <li> Mesher: (1) Creating a Mesh; (2) Rendering Geometry with Node Solution; (3) Rendering Deformations;</li>
   </ul>
   <li>
-    <h3> The .py file associated with the stages are grouped as following: </h3></li>
+    <h3> The key modules associated with the stages are grouped as following: </h3></li>
 
   <table id="table1">
     <tr>
@@ -36,31 +37,38 @@
     </tr>
 
     <tr>
-      <td> Load Files</td>
-      <td>LoadTiff/LoadDicom</td>
+      <td>Load Files</td>
+      <td>InputOutput</td>
       <td>The package can load:
-        <b>dicom</b> images stack or <b>tiff</b> image stack
+        <b>dicom</b> images stack or <b>tiff</b> image stack (LoadTiff/LoadDicom)
       </td>
     </tr>
     <tr>
       <td> Image Processing </td>
-      <td> scripy.ndimage </td>
-      <td> The Image Processing performs the preprocessing and transforms the image into a distance image</td>
+      <td> ImageProcessing </td>
+      <td> The Image Processing performs the preprocessing and transforms the image into a distance image(dependent:scripy.ndimage / skimage)</td>
     </tr>
     <tr>
       <td> Model Generation </td>
-      <td>PoissonDisk/DataVisu</td>
-      <td>The Model Generation descritizes the 3D domain and puts the node samples into the computational domain</td>
+      <td> Spatial Sampling</td>
+      <td>The Model Generation descritizes the 3D domain and puts the node samples into the computational domain(PoissonDisk/DataVisu)
+      </td>
     </tr>
     <tr>
       <td>DVC Computation</td>
-      <td>CorriFuc</td>
+      <td>Computation Function</td>
       <td>This is the core part for the DVC package, it calculates the relative deformation between two volumes.</td>
     </tr>
     <tr>
+      <td> Post Processing </td>
+      <td> PostProcessing</td>
+      <td> The Postprocessing module renders the computated displacements and strains, and the deformation can be rendered on the mesh model or the geometrical model.
+      </td>
+    </tr>
+    <tr>
       <td>Mesher</td>
-      <td> DelaunayMesh/mayavi.mlab</td>
-      <td>This module is Junchao's mesher for Finite Element Method Modeling</td>
+      <td>SpatialSampling</td>
+      <td>This module is Junchao's mesher for Finite Element Method Modeling(DelaunayMesh/mayavi.mlab)</td>
     </tr>
   </table>
   <p> </p>
@@ -92,8 +100,7 @@
 
   </li>
 
-  <li>
-    <h3>For the Fortran-Python Compiler file: <b>""</b></h3></li>
+  
   <ul>
     <li>Check the original f2py simple tutorial <a href="http://www.engr.ucsb.edu/~shell/che210d/f2py.pdf"><b>HERE</b></a></li>
     <li>The standard compiler language is "f2py –c –m MODULENAME SOURCE.f90 --fcompiler=gnu95 --compiler=mingw32"</li>
@@ -108,7 +115,16 @@
       </ul>
     </li>
   </ul>
-</ol>
+
+  <li>
+    <h3>Dependent Packages Installation</h3>
+  </li>
+  Several Dependent Packages are required to be installed before the usage:
+  <ul> 
+  <li>skimage(Image Processing Module): the installation of skimage can be found on the official websibe: <a href="http://scikit-image.org/download.html"> HERE.</a></li>
+  <li>mayavi(Image Visualization Module): the installation of skimage can be found on the official websibe: <a href="http://mayavi.sourceforge.net/install.html">HERE.</a></li>
+  </ul>
+
 
 <h1> DVC Package Scrips Usage </h1>
 <P> The usage of each module in the DVC package will be introduced and discussed.</P>
@@ -123,7 +139,8 @@
   <li> Using the LoadFiles module to load the image stack, there are two modules: <b>1. Dicom Module</b> and <b> Tiff Module.</b></li>
   <li> To check the availale Fortran Compiler: Runing the command: "f2py -c --help-fcompiler"</li>
 </ol>
-  
+  <h1>DVC Work Flowchart</h1>
+
   
 </body>
 </html>
