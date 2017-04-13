@@ -515,12 +515,6 @@ class Correlation:
         
         img = self.image1[x1:x2, y1:y2, z1:z2]
         tmplt = self.image2[xp1:xp2, yp1:yp2, zp1:zp2]
-        
-        #print img.shape
-        #print tmplt.shape
-    
-        
-        #print img.shape,tmplt.shape
     
         nabla_Tx = ndimage.sobel(tmplt,0)
         nabla_Ty = ndimage.sobel(tmplt,1)
@@ -578,9 +572,7 @@ class Correlation:
         #vl.contour3d()	
         #vl = Visulization.DataVisulization(tmplt, tmplt.mean())
         #vl.contour3d() 
-        
-        	
-        
+
         tpoints = np.dot(M,points).T
         translation = np.mean(tpoints.T,1)-np.mean(points,1)
         print translation
@@ -604,8 +596,8 @@ if __name__ == '__main__':
     from mayavi import mlab
     import mayavi
     
-    mat_contents1 = sio.loadmat('/Users/junchaowei/Desktop/Python_DVC2/UP_Research/793-crop-LC-smoothed.mat')
-    mat_contents2 = sio.loadmat('/Users/junchaowei/Desktop/Python_DVC2/UP_Research/808-crop-LC-smoothed.mat')
+    mat_contents1 = sio.loadmat('Dir1')
+    mat_contents2 = sio.loadmat('Dir2')
 
     image1 = mat_contents1['volume']
     image2 = mat_contents2['volume']

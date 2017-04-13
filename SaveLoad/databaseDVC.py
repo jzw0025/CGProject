@@ -163,7 +163,7 @@ class DVCdata():
 if __name__ == "__main__":
     print "this is the test!"
     
-    testClass = DVCdata("/Users/junchaowei/Desktop/Morning Report/Morning Report 09282016/NewFixtureStrainGauge/Wired/")
+    testClass = DVCdata("Dir")
         
     print testClass.getImage1()
     

@@ -379,38 +379,6 @@ class DiskSamples:
         
 if __name__ == '__main__':  
     #print "This is a test."
-    #from Visulization.DataVisu import DataVisulization               
-    #import scipy.io as sio
-    #import Visulization.DataVisu 
-    ##reload(DataVisu)
-    #from LoadDicom import ReadDicom     
-    #from MeshSize import MeshSize
-    
-    #mat_contents = sio.loadmat('mesh_test.mat')
-    #seg_arr1 = mat_contents['V']
-    # load the image from dicom files
-    # the following codes need to be optimized, since it uses the read dicom twice.
-    
-    #PathDicom1 = "/Users/junchaowei/Desktop/Python_DVC/CT_Data/AluminumBar_Ref_Def/Dicom_image1"
-    #dicom_volume1 = ReadDicom(PathDicom1)
-    #dicom_volume1.loadfiles()
-    #image1 = dicom_volume1.DicArray 
-    
-    # added on
-    #image_trans = MeshSize(image1)
-    #image_trans.grey2binary(4000)
-    #image_trans.distance_transform()   
-    
-    #Samples = DiskSamples(image1,image_trans.newimage,4000)
-    
-    #Samples.init_surface(10000)
-    #Samples.GenSamples(20,20000)
-    #point_arr = Samples.samples
-    #DataVisu.DataVisulization(image1,4000).scatterplot(point_arr)
-    
-    #Samples.image_histogram(image1,16)
-    #Samples.otsu_method()
-    #print Samples.level
     import scipy.io as sio
     from scipy import interpolate
     import Visulization
@@ -430,8 +398,8 @@ if __name__ == '__main__':
 
     import time
 
-    mat_contents1 = sio.loadmat('/Users/junchaowei/Desktop/Python_DVC2/UP_Research/WholeRegion/793-whole-LC-smoothed.mat')
-    mat_contents2 = sio.loadmat('/Users/junchaowei/Desktop/Python_DVC2/UP_Research/WholeRegion/808-whole-LC-smoothed.mat')
+    mat_contents1 = sio.loadmat('Dir1')
+    mat_contents2 = sio.loadmat('Dir2')
 
     image1 = mat_contents1['volume'][250:1180,200:1180,185:260]
     image2 = mat_contents2['volume'][250:1180,200:1180,185:260]

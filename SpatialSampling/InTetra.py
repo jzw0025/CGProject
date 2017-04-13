@@ -16,12 +16,6 @@ def SameSides(v1,v2,v3,v4, point):
     
     dot_V4 = np.dot(normal, np.array(v4) - np.array(v1))
     dot_P = np.dot(normal, np.array(point) - np.array(v1))
-    #print abs(dot_V4)
-    #print dot_V4
-    #print dot_V4/abs(dot_V4)
-    #print abs(dot_P)
-    #print dot_P
-    #print dot_P/abs(dot_P)
     return np.sign(dot_V4) == np.sign(dot_P)
     
 def inTetra(element_coordinator, point):

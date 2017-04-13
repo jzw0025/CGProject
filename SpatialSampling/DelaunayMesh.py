@@ -260,11 +260,6 @@ if __name__ == '__main__':
     """ 
     print "This is a test for tetrahedron mesh." 
     
-    #from LoadDicom import ReadDicom     
-    #from MeshSize import MeshSize
-    #from PoissonDisk import DiskSamples
-    
-    
     import scipy.io as sio
     from scipy import interpolate
     import Visulization
@@ -275,11 +270,8 @@ if __name__ == '__main__':
     from mayavi import mlab
     import Visulization
     import InputOutput
-             
-    #mat_contents = sio.loadmat('mesh_test.mat')
-    #seg_arr1 = mat_contents['V']
     
-    PathDicom1 = "/Users/junchaowei/Desktop/Python_DVC2/Flex/PE33_Dicom"
+    PathDicom1 = "directory"
     dicom_volume1 = InputOutput.ReadDicom(PathDicom1)
     dicom_volume1.loadfiles()
     image1 = dicom_volume1.DicArray 

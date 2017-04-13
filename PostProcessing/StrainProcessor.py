@@ -153,7 +153,7 @@ if __name__ == "__main__":
     import SpatialSampling
     import Visualization
     import scipy.ndimage as ndimage
-    inputDVC = SaveLoad.DVCdata("/Users/junchaowei/Desktop/HighResolutionStrain/")
+    inputDVC = SaveLoad.DVCdata("Dir")
     point_arr1 = inputDVC.getPoints1()
     Sample_Density = 12
     

@@ -64,7 +64,7 @@ class MeshSize:
         
 if __name__ == '__main__':   
     from LoadDicom import ReadDicom
-    PathDicom1 = "/Users/jerry/Desktop/Python_DVC/Dicom_image1"
+    PathDicom1 = "Directory"
     dicom_volume1 = ReadDicom(PathDicom1)
     dicom_volume1.loadfiles()
     image1 = dicom_volume1.DicArray 

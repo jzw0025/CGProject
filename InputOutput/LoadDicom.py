@@ -48,7 +48,7 @@ class ReadDicom:
         
 if __name__ == "__main__":
     print "this is a test."
-    PathDicom2 = "/Users/junchaowei/Desktop/Python_DVC2/CT_Data/dicom512def"
+    PathDicom2 = "Directory"
     Test = ReadDicom(PathDicom2)
     Test.loadfiles()
         

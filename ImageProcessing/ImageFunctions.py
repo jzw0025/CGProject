@@ -511,16 +511,12 @@ def imagePading(image,padsize = 1):
     
 if __name__ == "__main__":
     print "this is test file!"
-    out = readOCTstack("/Users/junchaowei/Desktop/Python_DVC2/UP_Research/WholeRegionRealData/For Junchao/M6_OD_125_C-scan_full")                    
-    out2 = readPartialOCTstack("/Users/junchaowei/Desktop/Python_DVC2/UP_Research/WholeRegionRealData/For Junchao/M6_OD_baseline_C-scan_full",350,400)                    
-    medOCT(out,15, local="/Users/junchaowei/Desktop/test")
+    medOCT(out,15, local="Dir")
     data = np.array([linebuilder.xs[1:], linebuilder.ys[1:]]).T    
     points = FindEllipse(data)    
-    a = plt.imread("/Users/junchaowei/Desktop/Python_DVC2/UP_Research/WholeRegionRealData/For Junchao/M6_OD_125_C-scan_full/400.tiff")
+    a = plt.imread("Dir")
     ra = rescale_intensity(a, in_range=(60,255))
-    
     mra = ndimage.filters.median_filter(ra, 3)
-    
     LogicRegion(a,points) 
     plt.imshow(ra,cmap='Greys_r')
     plt.plot(out[:,0],out[:,1])

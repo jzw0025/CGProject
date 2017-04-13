@@ -62,8 +62,8 @@ if __name__ == "__main__":
     print "this is unit test!"
     import scipy.io as sio
     
-    volume1 = deformed000
-    volume2 = deformed487_reg
+    volume1 = deformed1
+    volume2 = deformed2
     
     clip_plane = ClipPlane.ClipPlane()
     clip_plane.applyCenterPoint(0,-50,-80)
@@ -71,6 +71,4 @@ if __name__ == "__main__":
     clip_volume1 = getVolume(volume1,clip_plane,obj_center)
     clip_volume2 = getVolume(volume2,clip_plane,obj_center)
     
-    sio.savemat("/Users/junchaowei/Desktop/clip_000.mat", {'volume':clip_volume1}) # point_arr1 
-    sio.savemat("/Users/junchaowei/Desktop/clip_487.mat", {'volume':clip_volume2}) # point_arr1 
     

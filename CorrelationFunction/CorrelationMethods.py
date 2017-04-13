@@ -408,8 +408,7 @@ def KLT(seg_arr1, seg_arr2, image1_coordinator, image2_coordinator, subsize_fixe
                     condition = True
                     print "none converged trend!!!" 
                 break
-                	 
-         
+
         #vl = Visulization.DataVisulization(IWxp, IWxp.mean())
         #vl.contour3d()	
         #vl = Visulization.DataVisulization(tmplt, tmplt.mean())
@@ -518,7 +517,6 @@ def fixed_SVD(target, source):
     translation = translation + vector # translation is zero initially, this does not need to add iteratively, but keep the original formula
             
     return source, Rotation, translation 
-    
     
 def ICP(image2, point1, point2, iterations):
     change_points = point2
